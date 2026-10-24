@@ -37,6 +37,16 @@ rescue StandardError => e
   puts "  FAIL  #{description} (#{e.class}: #{e.message})"
 end
 
+# Small function: waits until a condition is true.
+#
+# NOTE: the deployed application is reached through a tunnel - it needs a
+# little more time than the local server.
+def wait_until(timeout = 15)
+  deadline = Time.now + timeout
+  sleep 0.3 until yield || Time.now > deadline
+  yield
+end
+
 # Small function: clicks an element.
 #
 # NOTE: the click is done with javascript, because the tooltip of Bootstrap
@@ -157,6 +167,41 @@ begin
     driver.find_element(css: ".assistant-answer-text").text.include?("user")
   end
   driver.save_screenshot(File.join(OUTPUT, "09_assistant_in_browser.png"))
+
+  # ----- the live filter (the table is filtered WHILE typing) --------------
+  before = driver.find_elements(css: "#users-table tbody tr[data-user-id]").size
+  filter = driver.find_element(css: '.toolbar-search input[name="q"]')
+  filter.clear
+  filter.send_keys("shafi")
+
+  # NOTE: the table is replaced by the answer of the server - the test waits
+  # for the new table.
+  filtered = wait_until do
+    rows = driver.find_elements(css: "#users-table tbody tr[data-user-id]")
+    rows.any? && rows.first.find_element(css: "td:nth-child(2)").text.include?("Shafi")
+  end
+
+  after = driver.find_elements(css: "#users-table tbody tr[data-user-id]").size
+  check("the table is filtered while the user types") { after < before && after > 0 }
+  # NOTE: the name is checked and not the e-mail - the edge of Cloudflare
+  # replaces the e-mail in the DOM with "[email protected]" (it is shown
+  # correctly on the screen, but the text of the element is the protected one).
+  check("the filtered row is the right one") { filtered }
+  check("the counters follow the filter") do
+    driver.find_element(id: "stat-total").text.strip == after.to_s
+  end
+  check("the address bar shows the filter") { driver.current_url.include?("q=shafi") }
+
+  # NOTE: the filter is cleared again, so that the table is complete. The
+  # event is dispatched by hand - `clear` does not fire the "input" event.
+  driver.execute_script(
+    "arguments[0].value = ''; arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", filter
+  )
+  complete = wait_until do
+    driver.find_elements(css: "#users-table tbody tr[data-user-id]").size == before
+  end
+  check("the table is complete again") { complete }
+  driver.save_screenshot(File.join(OUTPUT, "10_live_filter.png"))
 
   puts "\n=========================================================="
   puts " #{PASSED.size} checks passed, #{FAILED.size} failed"

@@ -508,12 +508,52 @@
   height: 2.3rem;
   width: 230px;
   padding-left: 2.2rem;
+  padding-right: 2.2rem;
   border-radius: var(--theme-radius-pill);
   border: 1px solid var(--theme-border);
   background-color: var(--theme-surface);
   font-size: var(--theme-font-size-sm);
   color: var(--theme-text);
   box-shadow: var(--theme-shadow-xs);
+}
+
+/* NOTE: the little spinner while the table is filtered - it is the status of
+   the request, not a decoration. */
+.toolbar-search-spinner {
+  display: none;
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid var(--theme-border-strong);
+  border-top-color: var(--theme-primary);
+  border-radius: var(--theme-radius-pill);
+}
+
+.toolbar-search-spinner.is-visible {
+  display: block;
+}
+
+/* NOTE: the loading indicators are the ONLY animated elements of the
+   application - they show that the application is working. Everything else
+   is switched off (see application.css).
+
+   IMPORTANT: the global rule of application.css uses `!important`, therefore
+   the animation of the indicators needs it as well - the more specific rule
+   wins. */
+.toolbar-search-spinner.is-visible {
+  animation: theme-spin 0.7s linear infinite !important;
+}
+
+/* the spinner of the assistant (the button "Run") */
+.spinner-border {
+  animation: spinner-border 0.75s linear infinite !important;
+}
+
+@keyframes theme-spin {
+  to { transform: translateY(-50%) rotate(360deg); }
 }
 
 .toolbar-search input:focus {

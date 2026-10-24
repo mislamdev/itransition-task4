@@ -125,11 +125,18 @@
   }
 
   // ===========================================================================
-  // Reloads the table without a full page reload (used by the assistant).
+  // Reloads the table without a full page reload.
+  //
+  // It is used by the live filter (while the user types) and by the assistant
+  // (when it changes the filter, the sort or the selection).
   // ===========================================================================
-  function reloadTable(params) {
+  function reloadTable(params, options) {
+    options = options || {};
+
     var url = new URL(window.location.href);
     url.search = new URLSearchParams(params).toString();
+
+    setFilterBusy(true);
 
     return fetch(url.toString(), { headers: { "X-Requested-With": "fetch" }, credentials: "same-origin" })
       .then(function (response) { return response.text(); })
@@ -148,11 +155,104 @@
           oldSummary.innerHTML = newSummary.innerHTML;
         }
 
+        // NOTE: the counters of the page and of the toolbar belong to the new
+        // result - they have to be updated as well.
+        copyText("stat-total", parsed);
+        copyText("stat-active", parsed);
+        copyText("stat-blocked", parsed);
+        copyText("selection-rows", parsed);
+
+        // NOTE: the address bar shows the current filter, therefore the link can
+        // be copied and the back button works.
+        if (options.updateAddress !== false) {
+          window.history.replaceState({}, "", url.toString());
+        }
+
         // NOTE: the new table has new checkboxes -> the toolbar is refreshed.
         initSelection();
         initTooltips();
       })
-      .catch(function () { window.location.reload(); });
+      .catch(function () { window.location.reload(); })
+      .finally(function () { setFilterBusy(false); });
+  }
+
+  // Small function: copies the text of an element of the new page.
+  function copyText(id, parsed) {
+    var target = document.getElementById(id);
+    var source = parsed.getElementById(id);
+    if (target && source) target.textContent = source.textContent;
+  }
+
+  // Small function: the "the table is being filtered" state.
+  // NOTE: the screen readers are told that the table is busy.
+  function setFilterBusy(busy) {
+    var table = document.getElementById("users-table");
+    if (table) table.setAttribute("aria-busy", busy ? "true" : "false");
+
+    var spinner = document.getElementById("filter-spinner");
+    if (spinner) spinner.classList.toggle("is-visible", busy);
+  }
+
+  // ===========================================================================
+  // THE LIVE FILTER - the table is filtered WHILE the user types.
+  // ===========================================================================
+  function initLiveFilter() {
+    var input = document.querySelector('.toolbar-search input[name="q"]');
+    if (!input) return;
+
+    var timer = null;
+
+    // Small function: the parameters of the filter - the fields of the form
+    // live in the toolbar, they are bound to the form with the attribute
+    // `form`, therefore they are collected here.
+    function filterParams() {
+      var params = new URLSearchParams();
+
+      document.querySelectorAll('[form="filter-form"]').forEach(function (field) {
+        if (!field.name) return;
+        if (field.value === "" || field.value === "all") return;
+        params.set(field.name, field.value);
+      });
+
+      return params;
+    }
+
+    // Small function: sends the filter to the server and replaces the table.
+    function apply() {
+      reloadTable(filterParams());
+    }
+
+    input.addEventListener("input", function () {
+      // NOTE: the wait for the next keystroke - a request for every letter
+      // would be a lot of traffic.
+      window.clearTimeout(timer);
+      timer = window.setTimeout(apply, 280);
+    });
+
+    // NOTE: the selects (the status, the sort and the direction) filter the
+    // table as well - they do not need a click on the button.
+    document.querySelectorAll('[form="filter-form"] select').forEach(function (select) {
+      select.addEventListener("change", function () {
+        window.clearTimeout(timer);
+        apply();
+      });
+    });
+
+    // NOTE: the enter key submits the form (a full page reload). The live
+    // filter has already shown the result - the submit only refreshes the
+    // address bar and the whole page.
+    input.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter") return;
+      window.clearTimeout(timer);
+    });
+
+    // NOTE: the little cross of the search field (the browser shows it for
+    // type="search") - it clears the filter too.
+    input.addEventListener("search", function () {
+      if (input.value !== "") return;
+      window.clearTimeout(timer);
+      apply();
+    });
   }
 
   // ===========================================================================
@@ -319,5 +419,6 @@
     initSelection();
     initAssistant();
     initPasswordToggles();
+    initLiveFilter();
   });
 })();

@@ -154,6 +154,7 @@ The result of the review with the checklist of the ui-ux-pro-max skill:
 | Labels for the inputs | every input has a visible label - a placeholder is never the only label |
 | The colour is not the only indicator | the status is a dot **and** a text, the blocked rows are struck through |
 | Table on a small screen | the table scrolls inside its own container, the page does not |
+| The feedback of an action | the counters, the selection and the address bar follow the result of the live filter |
 
 ## 6. The rules of the project
 

@@ -13,9 +13,9 @@
 
     <div class="d-flex flex-wrap align-items-center gap-3">
       <div class="stat-strip">
-        <span class="stat-pill"><strong><%= @total_count %></strong> in the view</span>
-        <span class="stat-pill"><strong><%= @active_count %></strong> active</span>
-        <span class="stat-pill"><strong><%= @blocked_count %></strong> blocked</span>
+        <span class="stat-pill"><strong id="stat-total"><%= @total_count %></strong> in the view</span>
+        <span class="stat-pill"><strong id="stat-active"><%= @active_count %></strong> active</span>
+        <span class="stat-pill"><strong id="stat-blocked"><%= @blocked_count %></strong> blocked</span>
       </div>
       <%= link_to "Ask the assistant", assistant_path, class: "btn btn-light btn-sm" %>
     </div>
@@ -115,17 +115,21 @@
           </div>
 
           <span class="toolbar-count" id="selection-info" aria-live="polite">
-            <strong id="selection-count">0</strong> of <%= pluralize(@users.size, "row") %> selected
+            <strong id="selection-count">0</strong> of <span id="selection-rows"><%= pluralize(@users.size, "row") %></span> selected
           </span>
 
           <%# NOTE: the filter of the table - the fields belong to the %>
-          <%# filter form above (the attribute `form`). %>
+          <%# filter form above (the attribute `form`). The table is filtered %>
+          <%# WHILE the user types, the javascript sends the filter to the %>
+          <%# server and replaces the table. %>
           <div class="toolbar-filter">
             <div class="toolbar-search">
               <i class="bi bi-search" aria-hidden="true"></i>
               <input type="search" form="filter-form" name="q" value="<%= @query %>"
                      placeholder="Filter" aria-label="Filter the users by name or e-mail"
-                     data-bs-toggle="tooltip" title="The table is filtered by name and e-mail.">
+                     autocomplete="off" spellcheck="false"
+                     data-bs-toggle="tooltip" title="The table is filtered by name and e-mail - while you type.">
+              <span class="toolbar-search-spinner" id="filter-spinner" aria-hidden="true"></span>
             </div>
 
             <select form="filter-form" name="status" class="form-select toolbar-select"

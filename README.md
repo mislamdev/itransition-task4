@@ -11,7 +11,7 @@ about the data and **controls the dashboard**.
 | CSS framework | Bootstrap 5.3.3 + Bootstrap Icons 1.11.3 (served from the app itself) |
 | Passwords | `has_secure_password` + bcrypt |
 | Server | Puma, published over a Cloudflare TLS tunnel |
-| Tests | 77 Minitest tests (263 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar (14 checks) |
+| Tests | 78 Minitest tests (270 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar and of the live filter (19 checks), a responsive check of the four resolutions |
 
 ---
 
@@ -96,6 +96,10 @@ app/assets/stylesheets/
   the sign in page) switches it; the choice is stored in a cookie and the
   **server renders the page in the chosen theme**, therefore there is no flash
   of the wrong theme while the page loads;
+* the **table is filtered while the user types** — the filter of the toolbar
+  sends the request to the server (debounced, 280 ms) and replaces the table,
+  the counters and the address bar; the selects of the toolbar (status, sort,
+  direction) filter as well;
 * the **sign in page** is a split screen: the form on the left, a geometric
   panel (pure CSS, no image, no animation) on the right;
 * the **table** stands on a plain surface — the task asks for no wallpaper
@@ -433,15 +437,16 @@ whole application (21 checks, all green):
 -- the assistant          the question is answered, the bot selects the users
 ```
 
-### The browser check of the toolbar
+### The browser check of the toolbar and of the live filter
 
 ```bash
 bundle exec ruby script/browser_check.rb https://argument-magic-yields-all.trycloudflare.com
 ```
 
-A real Chrome selects the rows, presses the buttons of the toolbar and checks
-what the server did (13 checks, all green) — the proof that the selection and
-the toolbar work together in a browser and not only in the test suite.
+A real Chrome selects the rows, presses the buttons of the toolbar, asks the
+assistant and **types into the filter** — it checks what the server did (19
+checks, all green): the proof that the selection, the toolbar and the live
+filter work together in a browser and not only in the test suite.
 
 ---
 
@@ -487,7 +492,8 @@ docs/DESIGN_SYSTEM.md                the documentation of the design system
 deploy/                              the launch agent of the server
 script/screenshot.rb                 the visual check
 script/acceptance.rb                 the acceptance test of the deployed app
-script/browser_check.rb              the browser check of the toolbar
+script/browser_check.rb              the browser check of the toolbar + the live filter
+script/responsive_check.rb           the four resolutions of the checklist
 users.json                           the data set of the task (imported by the seeds)
 ```
 
