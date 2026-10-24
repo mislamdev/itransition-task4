@@ -393,6 +393,16 @@ whole application (21 checks, all green):
 -- the assistant          the question is answered, the bot selects the users
 ```
 
+### The browser check of the toolbar
+
+```bash
+bundle exec ruby script/browser_check.rb https://argument-magic-yields-all.trycloudflare.com
+```
+
+A real Chrome selects the rows, presses the buttons of the toolbar and checks
+what the server did (13 checks, all green) — the proof that the selection and
+the toolbar work together in a browser and not only in the test suite.
+
 ---
 
 ## 6. The structure of the project
@@ -430,6 +440,7 @@ postman/                             the collection and the environments
 deploy/                              the launch agent of the server
 script/screenshot.rb                 the visual check
 script/acceptance.rb                 the acceptance test of the deployed app
+script/browser_check.rb              the browser check of the toolbar
 users.json                           the data set of the task (imported by the seeds)
 ```
 

@@ -1,0 +1,163 @@
+# frozen_string_literal: true
+
+# The browser check of the toolbar.
+#
+# IMPORTANT: the script drives a REAL browser (Chrome). It selects a row,
+# presses the buttons of the toolbar and checks that the server did what the
+# button promised. It is the proof that the table, the selection and the
+# toolbar work together - exactly like a user would use them.
+#
+# Usage:
+#   bundle exec ruby script/browser_check.rb https://<public url>
+#   SCREENSHOT_EMAIL=ada@example.com SCREENSHOT_PASSWORD=demo bundle exec ruby script/browser_check.rb
+
+require "selenium-webdriver"
+require "fileutils"
+
+BASE_URL = (ARGV[0] || "http://127.0.0.1:3100").chomp("/")
+EMAIL = ENV.fetch("SCREENSHOT_EMAIL", "ada@example.com")
+PASSWORD = ENV.fetch("SCREENSHOT_PASSWORD", "demo")
+OUTPUT = File.join(File.expand_path("..", __dir__), "tmp", "screenshots")
+
+PASSED = []
+FAILED = []
+
+# Small function: checks one expectation.
+def check(description)
+  ok = yield
+  if ok
+    PASSED << description
+    puts "  PASS  #{description}"
+  else
+    FAILED << description
+    puts "  FAIL  #{description}"
+  end
+rescue StandardError => e
+  FAILED << description
+  puts "  FAIL  #{description} (#{e.class}: #{e.message})"
+end
+
+# Small function: clicks an element.
+#
+# NOTE: the click is done with javascript, because the tooltip of Bootstrap
+# can cover an element (the tooltip follows the mouse) and a "real" mouse
+# click would then hit the tooltip instead of the button.
+def click(driver, element)
+  driver.execute_script("arguments[0].click();", element)
+  sleep 0.4
+end
+
+# Small function: the first row that does NOT belong to the signed in account.
+#
+# IMPORTANT: the toolbar must not block the account that is signed in - the
+# test would lock itself out.
+def other_row(driver, own_email)
+  driver.find_elements(css: "#users-table tbody tr[data-user-id]").find do |row|
+    row.find_element(css: "td:nth-child(3)").text.strip != own_email
+  end
+end
+
+# Small function: waits until the page is completely loaded.
+def wait_for_page(driver, timeout = 15)
+  deadline = Time.now + timeout
+  sleep 0.2 while driver.execute_script("return document.readyState") != "complete" && Time.now < deadline
+end
+
+FileUtils.mkdir_p(OUTPUT)
+
+options = Selenium::WebDriver::Chrome::Options.new
+options.add_argument("--headless=new")
+options.add_argument("--window-size=1440,900")
+options.add_argument("--hide-scrollbars")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-gpu")
+
+driver = Selenium::WebDriver.for(:chrome, options: options)
+
+begin
+  puts "== Browser check of #{BASE_URL} =="
+
+  # ----- sign in -------------------------------------------------------------
+  driver.navigate.to("#{BASE_URL}/login")
+  wait_for_page(driver)
+  driver.find_element(id: "login-form").find_element(name: "email").send_keys(EMAIL)
+  driver.find_element(id: "login-form").find_element(name: "password").send_keys(PASSWORD)
+  click(driver, driver.find_element(css: "input[type=submit]"))
+  wait_for_page(driver)
+  sleep 1
+
+  check("the sign in opens the user table") { driver.current_url.include?("/users") }
+  check("the table is rendered") { driver.find_elements(css: "#users-table tbody tr[data-user-id]").any? }
+  check("the toolbar is above the table") { driver.find_elements(css: "#selection-form .card-header button").size == 3 }
+
+  # ----- the selection -------------------------------------------------------
+  row = other_row(driver, EMAIL)
+  click(driver, row.find_element(css: ".row-checkbox"))
+  sleep 0.5
+
+  check("the selection is counted") { driver.find_element(id: "selection-count").text == "1" }
+  check("the block button is enabled") { driver.find_element(id: "block-selected").enabled? }
+  check("the delete button is enabled") { driver.find_element(id: "delete-selected").enabled? }
+
+  # ----- the header checkbox -------------------------------------------------
+  click(driver, driver.find_element(id: "select-all"))
+  sleep 0.5
+  selected = driver.find_elements(css: "#users-table tbody .row-checkbox").count { |c| c.selected? }
+  total = driver.find_elements(css: "#users-table tbody tr[data-user-id]").size
+  check("the header checkbox selects every row") { selected == total }
+
+  click(driver, driver.find_element(id: "select-all"))
+  sleep 0.5
+  selected = driver.find_elements(css: "#users-table tbody .row-checkbox").count { |c| c.selected? }
+  check("the header checkbox deselects every row") { selected.zero? }
+
+  # ----- the block button ----------------------------------------------------
+  row = other_row(driver, EMAIL)
+  blocked_email = row.find_element(css: "td:nth-child(3)").text.strip
+  click(driver, row.find_element(css: ".row-checkbox"))
+  click(driver, driver.find_element(id: "block-selected"))
+  wait_for_page(driver)
+  sleep 1
+
+  check("the block button shows the message") do
+    driver.find_elements(css: ".alert-success").any? { |alert| alert.text.include?("blocked") }
+  end
+  check("the row is blocked now") do
+    row = driver.find_elements(css: "#users-table tbody tr[data-user-id]").find do |item|
+      item.find_element(css: "td:nth-child(3)").text.strip == blocked_email
+    end
+    row && row.find_element(css: ".badge").text.include?("Blocked")
+  end
+  driver.save_screenshot(File.join(OUTPUT, "08_after_block.png"))
+
+  # ----- the unblock button --------------------------------------------------
+  row = other_row(driver, EMAIL)
+  click(driver, row.find_element(css: ".row-checkbox"))
+  check("the unblock button is enabled for a blocked row") { driver.find_element(id: "unblock-selected").enabled? }
+  click(driver, driver.find_element(id: "unblock-selected"))
+  wait_for_page(driver)
+  sleep 1
+
+  check("the unblock button shows the message") do
+    driver.find_elements(css: ".alert-success").any? { |alert| alert.text.include?("unblocked") }
+  end
+
+  # ----- the assistant in the browser ---------------------------------------
+  driver.find_element(css: "[data-assistant-input]").send_keys("How many users are blocked?")
+  click(driver, driver.find_element(id: "assistant-run"))
+  sleep 3
+
+  check("the assistant answers the question") do
+    driver.find_element(css: ".assistant-answer-text").text.include?("user")
+  end
+  driver.save_screenshot(File.join(OUTPUT, "09_assistant_in_browser.png"))
+
+  puts "\n=========================================================="
+  puts " #{PASSED.size} checks passed, #{FAILED.size} failed"
+  puts "=========================================================="
+  FAILED.each { |description| puts " FAILED: #{description}" }
+ensure
+  driver.quit
+end
+
+exit(FAILED.empty? ? 0 : 1)
