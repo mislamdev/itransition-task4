@@ -55,12 +55,26 @@ automatically.
 
 ### The dark theme
 
-`theme/tokens.css` contains a second set of tokens under `.theme-dark`. The
-class on the `<body>` switches the whole application to the dark theme:
+`theme/tokens.css` contains a second set of tokens under `.theme-dark`.
+**Only the tokens are redefined** — therefore a component works in the dark
+theme without a single additional line.
 
-```erb
-<body class="theme-dark">
-```
+The switch is done by the server:
+
+| | |
+|---|---|
+| the button | `app/views/shared/_theme_toggle.html.erb` — a form button (sun / moon) |
+| the action | `POST /theme` (`ThemesController`) — stores the choice in a cookie |
+| the reading | `ApplicationController#current_theme` — the cookie decides |
+| the rendering | `<html class="theme-dark" data-bs-theme="dark">` |
+
+`data-bs-theme` switches the components of the CSS framework, the class
+`theme-dark` switches the tokens of the application.
+
+Because the **server** reads the cookie and renders the page in the chosen
+theme, there is no flash of the light theme while the page loads (a solution
+with `localStorage` would paint the light theme first and switch it
+afterwards).
 
 ---
 

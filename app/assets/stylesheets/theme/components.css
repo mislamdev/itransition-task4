@@ -516,7 +516,7 @@
   border-radius: var(--theme-radius-md);
   border-left: 3px solid var(--theme-accent);
   background-color: var(--theme-accent-soft);
-  color: #08655c;
+  color: var(--theme-accent-text);
 }
 
 .assistant-plan {
@@ -528,6 +528,39 @@
   max-height: 20rem;
   overflow: auto;
   padding: var(--theme-space-3) var(--theme-space-4);
+}
+
+/* -----------------------------------------------------------------------------
+   THE SWITCH OF THE THEME
+   -------------------------------------------------------------------------- */
+.theme-toggle {
+  width: 2.3rem;
+  height: 2.3rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--theme-radius-pill);
+  border: 1px solid var(--theme-border);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow-xs);
+  font-size: 0.95rem;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus {
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+  background-color: var(--theme-primary-softer);
+}
+
+/* NOTE: the top of the panel of the sign in page - the brand and the switch. */
+.auth-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--theme-space-3);
 }
 
 /* -----------------------------------------------------------------------------

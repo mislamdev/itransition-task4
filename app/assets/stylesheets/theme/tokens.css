@@ -27,14 +27,23 @@
   --theme-accent: #00b8a9;
   --theme-accent-strong: #009184;
   --theme-accent-soft: #e2f7f4;
+  --theme-accent-text: #08655c;
 
+  /* the status colours - the background and the text of a message */
   --theme-danger: #e5484d;
   --theme-danger-strong: #c93a3f;
   --theme-danger-soft: #fdecec;
+  --theme-danger-text: #a5282c;
+
   --theme-warning: #f5a524;
   --theme-warning-soft: #fff6e5;
+  --theme-warning-text: #8a5a05;
+
   --theme-success: #12a150;
   --theme-success-soft: #e7f7ee;
+  --theme-success-text: #0b6b37;
+
+  --theme-info-text: #24389e;
 
   /* the neutral scale */
   --theme-slate-50: #f6f8fb;
@@ -129,23 +138,65 @@
 }
 
 /* -----------------------------------------------------------------------------
-   THE DARK THEME of the application (the accent colours of the framework).
-   NOTA BENE: the switch is a class on the <body>, therefore a theme can be
-   activated per page or per user without a reload.
+   THE DARK THEME of the application.
+   -----------------------------------------------------------------------------
+   IMPORTANT: the switch is a class on the <body> AND the attribute
+   `data-bs-theme="dark"` on the <html> - the first one switches the tokens of
+   the application, the second one the components of the CSS framework.
+
+   NOTA BENE: only the tokens are redefined here, therefore a new component
+   works in the dark theme without a single additional line.
    -------------------------------------------------------------------------- */
 .theme-dark {
   --theme-bg: #0d1117;
-  --theme-surface: #161b22;
-  --theme-surface-muted: #1c2230;
-  --theme-border: #262d38;
-  --theme-border-strong: #333c4a;
+  --theme-surface: #151b24;
+  --theme-surface-muted: #1c2330;
+  --theme-border: #262e3b;
+  --theme-border-strong: #37414f;
+
   --theme-text: #e6edf3;
-  --theme-text-muted: #9aa5b6;
-  --theme-text-subtle: #6e7a8c;
-  --theme-primary-soft: #1b2440;
-  --theme-primary-softer: #151c31;
-  --theme-accent-soft: #10312e;
-  --theme-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --theme-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --theme-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55);
+  --theme-text-muted: #98a4b5;
+  --theme-text-subtle: #6d7a8c;
+
+  /* the accent - a little brighter, so that it shines on a dark surface */
+  --theme-primary: #6b83ff;
+  --theme-primary-strong: #8b9dff;
+  --theme-primary-soft: #1a2242;
+  --theme-primary-softer: #161d33;
+
+  --theme-accent: #2fd4c3;
+  --theme-accent-strong: #5ee7d9;
+  --theme-accent-soft: #12312e;
+  --theme-accent-text: #7ef0e2;
+
+  --theme-danger: #f06167;
+  --theme-danger-strong: #ff7b81;
+  --theme-danger-soft: #2d1618;
+  --theme-danger-text: #ff9ba0;
+
+  --theme-warning: #f5a524;
+  --theme-warning-soft: #2c2211;
+  --theme-warning-text: #ffc86b;
+
+  --theme-success: #2fbf6b;
+  --theme-success-soft: #10261a;
+  --theme-success-text: #6ee7a8;
+
+  --theme-info-text: #a9b8ff;
+
+  /* the neutral scale is a little cooler on a dark surface */
+  --theme-slate-500: #7b8798;
+  --theme-slate-600: #9aa5b6;
+
+  /* the depth - on a dark surface the shadows are almost invisible, therefore
+     the borders do the work */
+  --theme-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --theme-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --theme-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --theme-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.6);
+  --theme-shadow-focus: 0 0 0 4px rgba(107, 131, 255, 0.25);
+
+  /* the pattern of the sign in page is the same in both themes - it always
+     lies on the blue gradient of the decorative panel */
+  --theme-pattern-geo: var(--theme-pattern-geo-default);
 }

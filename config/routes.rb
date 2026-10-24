@@ -16,6 +16,11 @@ Rails.application.routes.draw do
   # ----- the assistant (natural language) -------------------------------------
   get "/assistant", to: "assistant#index", as: :assistant
 
+  # ----- the theme (light / dark) ---------------------------------------------
+  # NOTE: the choice is stored in a cookie and the server renders the page in
+  # the chosen theme.
+  post "/theme", to: "themes#update", as: :theme
+
   # ----- the admin panel -----------------------------------------------------
   # IMPORTANT: there is NO route for a single user - the table works with a
   # selection of rows and the toolbar. There are no buttons inside the rows.

@@ -120,6 +120,20 @@
   --bs-btn-disabled-border-color: var(--theme-border);
 }
 
+.btn-outline-primary {
+  --bs-btn-color: var(--theme-primary);
+  --bs-btn-border-color: var(--theme-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--theme-primary);
+  --bs-btn-hover-border-color: var(--theme-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--theme-primary-strong);
+  --bs-btn-active-border-color: var(--theme-primary-strong);
+  --bs-btn-disabled-color: var(--theme-text-subtle);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--theme-border);
+}
+
 .btn-outline-danger {
   --bs-btn-color: var(--theme-danger);
   --bs-btn-border-color: rgba(229, 72, 77, 0.45);
@@ -272,12 +286,12 @@
 
 .text-bg-success {
   background-color: var(--theme-success-soft) !important;
-  color: var(--theme-success) !important;
+  color: var(--theme-success-text) !important;
 }
 
 .text-bg-danger {
   background-color: var(--theme-danger-soft) !important;
-  color: var(--theme-danger) !important;
+  color: var(--theme-danger-text) !important;
 }
 
 .text-bg-secondary {
@@ -297,26 +311,26 @@
 
 .alert-success {
   --bs-alert-bg: var(--theme-success-soft);
-  --bs-alert-border-color: rgba(18, 161, 80, 0.24);
-  --bs-alert-color: #0b6b37;
+  --bs-alert-border-color: var(--theme-success);
+  --bs-alert-color: var(--theme-success-text);
 }
 
 .alert-danger {
   --bs-alert-bg: var(--theme-danger-soft);
-  --bs-alert-border-color: rgba(229, 72, 77, 0.24);
-  --bs-alert-color: #a5282c;
+  --bs-alert-border-color: var(--theme-danger);
+  --bs-alert-color: var(--theme-danger-text);
 }
 
 .alert-warning {
   --bs-alert-bg: var(--theme-warning-soft);
-  --bs-alert-border-color: rgba(245, 165, 36, 0.3);
-  --bs-alert-color: #8a5a05;
+  --bs-alert-border-color: var(--theme-warning);
+  --bs-alert-color: var(--theme-warning-text);
 }
 
 .alert-info {
   --bs-alert-bg: var(--theme-primary-soft);
-  --bs-alert-border-color: rgba(59, 91, 253, 0.22);
-  --bs-alert-color: #24389e;
+  --bs-alert-border-color: var(--theme-primary);
+  --bs-alert-color: var(--theme-info-text);
 }
 
 /* -----------------------------------------------------------------------------
@@ -340,4 +354,23 @@
   --bs-dropdown-link-hover-bg: var(--theme-surface-muted);
   --bs-dropdown-link-active-bg: var(--theme-primary);
   box-shadow: var(--theme-shadow-md);
+}
+
+/* -----------------------------------------------------------------------------
+   THE TOOLTIPS
+   NOTE: the tooltip is put into the body by the framework - therefore it needs
+   its own colours in the dark theme.
+   -------------------------------------------------------------------------- */
+.tooltip .tooltip-inner {
+  background-color: var(--theme-slate-900);
+  color: #ffffff;
+  border-radius: var(--theme-radius-xs);
+  font-size: var(--theme-font-size-xs);
+  padding: 0.35rem 0.55rem;
+}
+
+[data-bs-theme="dark"] .tooltip .tooltip-inner {
+  background-color: var(--theme-surface-muted);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border-strong);
 }

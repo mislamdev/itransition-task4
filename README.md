@@ -11,7 +11,7 @@ about the data and **controls the dashboard**.
 | CSS framework | Bootstrap 5.3.3 + Bootstrap Icons 1.11.3 (served from the app itself) |
 | Passwords | `has_secure_password` + bcrypt |
 | Server | Puma, published over a Cloudflare TLS tunnel |
-| Tests | 71 Minitest tests (250 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar (14 checks) |
+| Tests | 77 Minitest tests (263 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar (14 checks) |
 
 ---
 
@@ -92,6 +92,10 @@ app/assets/stylesheets/
 └── application.css             the rules of the pages
 ```
 
+* a **light and a dark theme** — the button in the navigation header (and on
+  the sign in page) switches it; the choice is stored in a cookie and the
+  **server renders the page in the chosen theme**, therefore there is no flash
+  of the wrong theme while the page loads;
 * the **sign in page** is a split screen: the form on the left, a geometric
   panel (pure CSS, no image, no animation) on the right;
 * the **table** stands on a plain surface — the task asks for no wallpaper
@@ -351,7 +355,7 @@ the page, and the plan plus the API calls can be opened below the answer
 ## 6. The tests
 
 ```bash
-bin/rails test          # 71 tests, 250 assertions
+bin/rails test          # 77 tests, 263 assertions
 ```
 
 > The **CSRF protection is enabled in the test environment** — the tests send

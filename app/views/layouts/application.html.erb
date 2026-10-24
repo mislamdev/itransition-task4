@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="<%= 'theme-dark' if dark_theme? %>" data-bs-theme="<%= current_theme %>">
   <head>
     <title><%= page_title %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -48,6 +48,11 @@
             </ul>
 
             <ul class="navbar-nav align-items-lg-center gap-2">
+              <%# NOTE: the switch of the theme. %>
+              <li class="nav-item">
+                <%= render "shared/theme_toggle" %>
+              </li>
+
               <%# NOTE: the profile of the signed in account - the sign out %>
               <%# button is inside the dropdown menu of the profile. %>
               <li class="nav-item dropdown">

@@ -1,0 +1,11 @@
+<%# NOTE: the switch between the light and the dark theme.
+    IMPORTANT: the button is a form - the server stores the choice in a cookie
+    and renders the page in the chosen theme (no flash of the wrong theme). %>
+<%= button_to theme_path, method: :post,
+              params: { theme: dark_theme? ? "light" : "dark" },
+              class: "btn theme-toggle",
+              form: { class: "d-inline-flex" },
+              title: dark_theme? ? "Switch to the light theme" : "Switch to the dark theme",
+              aria: { label: dark_theme? ? "Switch to the light theme" : "Switch to the dark theme" } do %>
+  <i class="bi <%= dark_theme? ? 'bi-sun-fill' : 'bi-moon-stars-fill' %>" aria-hidden="true"></i>
+<% end %>

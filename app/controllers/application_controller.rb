@@ -22,11 +22,18 @@ class ApplicationController < ActionController::Base
   # ---------------------------------------------------------------------------
   before_action :require_authenticated_user
 
-  helper_method :current_user, :signed_in?, :page_title
+  helper_method :current_user, :signed_in?, :page_title, :current_theme, :dark_theme?
 
-  # NOTE: these two actions are the only ones that may be reached without a
+  # NOTE: these actions are the only ones that may be reached without a
   # session. Everything else requires an existing, non-blocked account.
-  PUBLIC_ACTIONS = %w[sessions#new sessions#create registrations#new registrations#create].freeze
+  #
+  # IMPORTANT: the switch of the theme is public as well - the sign in page
+  # has the button too.
+  PUBLIC_ACTIONS = %w[
+    sessions#new sessions#create
+    registrations#new registrations#create
+    themes#update
+  ].freeze
 
   private
 
@@ -102,5 +109,18 @@ class ApplicationController < ActionController::Base
   # Small function: the title shown in the browser tab and in the navigation bar.
   def page_title
     "User Management"
+  end
+
+  # Small function: the theme of the page - "light" or "dark".
+  #
+  # IMPORTANT: the theme is read from the cookie, therefore the server renders
+  # the page in the chosen theme (no flash of the wrong theme).
+  def current_theme
+    @current_theme ||= cookies[ThemesController::COOKIE_NAME].to_s == "dark" ? "dark" : "light"
+  end
+
+  # Small function: the dark theme is switched on.
+  def dark_theme?
+    current_theme == "dark"
   end
 end
