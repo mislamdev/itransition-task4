@@ -1,0 +1,344 @@
+openapi: 3.1.0
+info:
+  title: User Management API
+  version: "1.0.0"
+  description: |
+    The REST API of the user management application.
+
+    IMPORTANT: this API is the contract that the natural language assistant
+    uses. Every number in an answer of the assistant comes from this API, never
+    from a language model.
+
+    Authentication:
+      * `session` - the cookie of a signed in browser session (the UI).
+      * `bearer` - `Authorization: Bearer <token>` for server to server calls
+        (the assistant itself uses this).
+
+    The e-mail uniqueness of the application is guaranteed by a UNIQUE INDEX in
+    PostgreSQL (`index_users_on_email` and `index_users_on_lower_email`).
+servers:
+  - url: http://127.0.0.1:3100
+    description: local development
+  - url: "{baseUrl}"
+    description: the deployed application (set baseUrl in the environment)
+
+tags:
+  - name: users
+    description: the users of the application
+  - name: assistant
+    description: the natural language layer on top of the users API
+
+paths:
+  /api/v1/users:
+    get:
+      tags: [users]
+      summary: The list of the users, filtered and sorted.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: "Free text on the name or the e-mail." }
+        - { name: email_prefix, in: query, schema: { type: string }, description: "Comma separated list of e-mail prefixes, e.g. `s,p`." }
+        - { name: email_contains, in: query, schema: { type: string } }
+        - { name: name_contains, in: query, schema: { type: string } }
+        - { name: domain, in: query, schema: { type: string }, description: "The e-mail domain, e.g. `gmail.com`." }
+        - { name: status, in: query, schema: { type: string, enum: [active, blocked, all] }, default: all }
+        - { name: window, in: query, schema: { type: string, enum: [day, week, month, all] }, default: all }
+        - { name: sort, in: query, schema: { type: string, enum: [name, email, position, last_login_at, last_activity_at, status, created_at] }, default: last_login_at }
+        - { name: direction, in: query, schema: { type: string, enum: [asc, desc] }, default: desc }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 }, default: 25 }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0 }, default: 0 }
+      responses:
+        "200":
+          description: the users
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/users/stats:
+    get:
+      tags: [users]
+      summary: All the counters of the users - computed by the database.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [active, blocked, all] } }
+        - { name: email_prefix, in: query, schema: { type: string } }
+        - { name: domain, in: query, schema: { type: string } }
+        - { name: group_by, in: query, schema: { type: string, enum: [none, status, domain] } }
+      responses:
+        "200":
+          description: the counters
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Statistics" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/users/bulk_block:
+    post:
+      tags: [users]
+      summary: Blocks the selected users (the "Block" button of the toolbar).
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_ids: { type: array, items: { type: integer } }
+      responses:
+        "200":
+          description: the number of the affected users
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BulkResult" }
+
+  /api/v1/users/bulk_unblock:
+    post:
+      tags: [users]
+      summary: Unblocks the selected users (the "Unblock" icon of the toolbar).
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_ids: { type: array, items: { type: integer } }
+      responses:
+        "200":
+          description: the number of the affected users
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BulkResult" }
+
+  /api/v1/users/bulk_delete:
+    post:
+      tags: [users]
+      summary: Deletes the selected users (the "Delete" icon of the toolbar).
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_ids: { type: array, items: { type: integer } }
+      responses:
+        "200":
+          description: the number of the deleted users
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BulkResult" }
+
+  /api/v1/assistant/ask:
+    post:
+      tags: [assistant]
+      summary: Asks a question about the users and gets the answer as text.
+      description: |
+        The question is translated into a structured plan, the plan is executed
+        against the users API and the answer is assembled from the numbers the
+        database returned.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question: { type: string, example: "How many users are blocked?" }
+      responses:
+        "200":
+          description: the answer
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AssistantResult" }
+        "422": { $ref: "#/components/responses/UnprocessableEntity" }
+
+  /api/v1/assistant/command:
+    post:
+      tags: [assistant]
+      summary: Gives a command that controls the user table.
+      description: |
+        The command is translated into a plan, the plan is executed against the
+        users API and the answer contains the actions for the browser
+        (`ui_actions`): select the users, clear the selection, change the
+        filter, change the sort or reload the table.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command]
+              properties:
+                command: { type: string, example: "select users with e-mails started with s or p" }
+                selected_ids: { type: array, items: { type: integer } }
+      responses:
+        "200":
+          description: the answer and the actions for the browser
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AssistantResult" }
+        "422": { $ref: "#/components/responses/UnprocessableEntity" }
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: _user_management_session
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  responses:
+    Unauthorized:
+      description: no session, or the account is blocked or deleted
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+    UnprocessableEntity:
+      description: the request is not valid (empty question / empty command)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        position: { type: string, nullable: true, description: "The job title of the account." }
+        status: { type: string, enum: [active, blocked] }
+        blocked: { type: boolean }
+        last_login_at: { type: string, format: date-time, nullable: true }
+        last_activity_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        email_domain: { type: string }
+
+    UserList:
+      type: object
+      properties:
+        query: { type: object, description: "the filters that were really applied" }
+        total_count: { type: integer }
+        returned_count: { type: integer }
+        users:
+          type: array
+          items: { $ref: "#/components/schemas/User" }
+
+    Statistics:
+      type: object
+      properties:
+        filters: { type: object }
+        totals:
+          type: object
+          properties:
+            users: { type: integer }
+            active: { type: integer }
+            blocked: { type: integer }
+        overall:
+          type: object
+          description: the counters of the whole table, without any filter
+          properties:
+            users: { type: integer }
+            active: { type: integer }
+            blocked: { type: integer }
+        activity:
+          type: object
+          properties:
+            last_login_24h: { type: integer }
+            last_login_7d: { type: integer }
+            last_login_30d: { type: integer }
+            last_login_ever: { type: integer }
+            never_logged_in: { type: integer }
+            registered_24h: { type: integer }
+            registered_7d: { type: integer }
+            registered_30d: { type: integer }
+            active_last_24h: { type: integer }
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              count: { type: integer }
+
+    BulkResult:
+      type: object
+      properties:
+        operation: { type: string, enum: [block, unblock, delete] }
+        count: { type: integer }
+        ids: { type: array, items: { type: integer } }
+
+    Plan:
+      type: object
+      properties:
+        intent: { type: string }
+        filters: { type: object }
+        sort: { type: string }
+        direction: { type: string }
+        group_by: { type: string }
+        limit: { type: integer }
+        metric: { type: string, enum: [login, registration] }
+        never_logged_in: { type: boolean }
+
+    UiAction:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [select_users, clear_selection, set_filter, sort_by, reload]
+        ids: { type: array, items: { type: integer } }
+        count: { type: integer }
+        filters: { type: object }
+        sort: { type: string }
+        direction: { type: string }
+
+    AssistantResult:
+      type: object
+      properties:
+        question: { type: string }
+        answer: { type: string, description: "the answer as text" }
+        engine: { type: string, description: "rules or llm" }
+        plan: { $ref: "#/components/schemas/Plan" }
+        api_calls:
+          type: array
+          description: the calls the assistant made against the API
+          items:
+            type: object
+            properties:
+              method: { type: string }
+              path: { type: string }
+              params: { type: object }
+              status: { type: integer }
+        ui_actions:
+          type: array
+          items: { $ref: "#/components/schemas/UiAction" }
+        data: { type: object, description: "the raw answer of the API" }

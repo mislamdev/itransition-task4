@@ -1,0 +1,83 @@
+<%# NOTE: the registration form.
+    IMPORTANT: the account is created immediately - there is no approval step. %>
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-9 col-md-7 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-body-tertiary">
+        <h1 class="h5 mb-0"><i class="bi bi-person-plus me-2" aria-hidden="true"></i>Register</h1>
+      </div>
+
+      <div class="card-body">
+        <%# NOTE: the error summary of the form. %>
+        <% if @user.errors.any? %>
+          <div class="alert alert-danger" role="alert">
+            <p class="mb-2"><strong><%= pluralize(@user.errors.count, "error") %> prevented the registration:</strong></p>
+            <ul class="mb-0 ps-3">
+              <% @user.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= form_with model: @user, url: signup_path, method: :post, local: true, id: "registration-form" do |f| %>
+          <div class="mb-3">
+            <%= f.label :name, "Name", class: "form-label", for: getUniqIdValue("user-name") %>
+            <%# IMPORTANT: the id of the input comes from getUniqIdValue, the
+                label points to exactly that id. %>
+            <input type="text" name="user[name]" id="<%= getUniqIdValue("user-name") %>"
+                   value="<%= @user.name %>" required maxlength="120" autocomplete="name"
+                   class="form-control <%= 'is-invalid' if @user.errors[:name].any? %>"
+                   data-bs-toggle="tooltip" title="The name that is shown in the user table.">
+            <% if @user.errors[:name].any? %>
+              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:name).to_sentence %></div>
+            <% end %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, "E-mail", class: "form-label", for: getUniqIdValue("user-email") %>
+            <input type="email" name="user[email]" id="<%= getUniqIdValue("user-email") %>"
+                   value="<%= @user.email %>" required autocomplete="username"
+                   class="form-control <%= 'is-invalid' if @user.errors[:email].any? %>"
+                   data-bs-toggle="tooltip"
+                   title="The e-mail must be unique - a UNIQUE INDEX in the database guarantees it.">
+            <% if @user.errors[:email].any? %>
+              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:email).to_sentence %></div>
+            <% end %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password, "Password", class: "form-label", for: getUniqIdValue("user-password") %>
+            <input type="password" name="user[password]" id="<%= getUniqIdValue("user-password") %>"
+                   required autocomplete="new-password"
+                   class="form-control <%= 'is-invalid' if @user.errors[:password].any? %>"
+                   data-bs-toggle="tooltip"
+                   title="Any non-empty password is accepted - even a single character.">
+            <% if @user.errors[:password].any? %>
+              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password).to_sentence %></div>
+            <% end %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password_confirmation, "Confirm password", class: "form-label", for: getUniqIdValue("user-password-confirmation") %>
+            <input type="password" name="user[password_confirmation]"
+                   id="<%= getUniqIdValue("user-password-confirmation") %>"
+                   required autocomplete="new-password"
+                   class="form-control <%= 'is-invalid' if @user.errors[:password_confirmation].any? %>"
+                   data-bs-toggle="tooltip" title="Repeat the password to avoid typos.">
+            <% if @user.errors[:password_confirmation].any? %>
+              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password_confirmation).to_sentence %></div>
+            <% end %>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <%= f.submit "Register", class: "btn btn-primary" %>
+            <span class="small text-body-secondary">
+              Already registered? <%= link_to "Sign in", login_path, class: "link-primary" %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,546 @@
+{
+  "info": {
+    "name": "User Management API",
+    "description": "The contract of the user management application.\n\nThe collection signs in through the real login form (the cookie jar of the runner keeps the session), then it exercises the REST API that the natural language assistant uses.\n\nEvery request of the folder \"Users API\" and \"Assistant\" checks the answer of the server - the assertions are the executable documentation of the contract.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// NOTE: the CSRF token of the session is sent with every write request.",
+          "// The token is taken from the <meta name=\"csrf-token\"> tag of the pages.",
+          "const token = pm.environment.get(\"csrf_token\");",
+          "if (token) {",
+          "  pm.request.headers.upsert({ key: \"X-CSRF-Token\", value: token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "email", "value": "ada@example.com", "type": "string" },
+    { "key": "password", "value": "demo", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login page",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "text/html" }],
+            "url": { "raw": "{{baseUrl}}/login", "host": ["{{baseUrl}}"], "path": ["login"] },
+            "description": "The public login form. The CSRF token of the session is saved for the sign in."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"the login form is public\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.text()).to.include(\"login-form\");",
+                  "});",
+                  "",
+                  "const match = pm.response.text().match(/name=\"authenticity_token\" value=\"([^\"]+)\"/);",
+                  "pm.environment.set(\"csrf_token\", match ? match[1] : \"\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign in",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "email", "value": "{{email}}" },
+                { "key": "password", "value": "{{password}}" },
+                { "key": "authenticity_token", "value": "{{csrf_token}}" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/login", "host": ["{{baseUrl}}"], "path": ["login"] },
+            "description": "Signs in with the credentials of the environment. The session cookie is kept by the runner."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"the sign in redirects to the user table\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Open the user table",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "text/html" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "description": "The admin panel. The page carries the CSRF token of the new session."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"the user table is rendered\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.text()).to.include(\"users-table\");",
+                  "});",
+                  "",
+                  "const match = pm.response.text().match(/name=\"csrf-token\" content=\"([^\"]+)\"/);",
+                  "pm.environment.set(\"csrf_token\", match ? match[1] : \"\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The API uses the session of the browser",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/users", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users"] },
+            "description": "The API accepts the session of the browser. WITHOUT a session the same request answers with 401 - that is covered by the test of the Rails application (test/integration/api_test.rb)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"the session of the browser is accepted\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().total_count).to.be.a(\"number\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users API",
+      "item": [
+        {
+          "name": "The first user",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?email_prefix=linus&limit=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"],
+              "query": [
+                { "key": "email_prefix", "value": "linus" },
+                { "key": "limit", "value": "1" }
+              ]
+            },
+            "description": "Stores the id of a demo user in the environment - the toolbar actions of this folder work on this user. NOTE: it is NOT the account of the runner, so that the session stays alive."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the first user is available\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.users.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.environment.set(\"user_id\", body.users[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The list of the users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?sort=last_login_at&direction=desc&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"],
+              "query": [
+                { "key": "sort", "value": "last_login_at" },
+                { "key": "direction", "value": "desc" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the list of the users is returned\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.total_count).to.be.a(\"number\");",
+                  "  pm.expect(body.users).to.be.an(\"array\");",
+                  "  pm.expect(body.users[0]).to.have.property(\"email\");",
+                  "  pm.expect(body.users[0]).to.have.property(\"last_login_at\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The users with an e-mail prefix",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?email_prefix=s,p",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"],
+              "query": [{ "key": "email_prefix", "value": "s,p" }]
+            },
+            "description": "The filter of the assistant: \"e-mails started with s or p\"."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"only the users with the prefix are returned\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.users.length).to.be.above(0);",
+                  "  body.users.forEach(function (user) {",
+                  "    pm.expect(user.email.charAt(0)).to.be.oneOf([\"s\", \"p\"]);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The statistics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/users/stats", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users", "stats"] },
+            "description": "The counters - they are computed by PostgreSQL, not by a model."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the counters are returned\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.totals.users).to.be.a(\"number\");",
+                  "  pm.expect(body.totals.active + body.totals.blocked).to.eql(body.totals.users);",
+                  "  pm.expect(body.activity.last_login_7d).to.be.a(\"number\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The statistics per e-mail domain",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/stats?group_by=domain",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "stats"],
+              "query": [{ "key": "group_by", "value": "domain" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the groups are returned\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.groups).to.be.an(\"array\");",
+                  "  pm.expect(body.groups[0]).to.have.property(\"key\");",
+                  "  pm.expect(body.groups[0]).to.have.property(\"count\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Block the selected users",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_ids\": [{{user_id}}]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/users/bulk_block", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users", "bulk_block"] },
+            "description": "The \"Block\" button of the toolbar. The user_id variable is filled by the pre-request script."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the user is blocked\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.count).to.eql(1);",
+                  "  pm.expect(body.operation).to.eql(\"block\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unblock the selected users",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_ids\": [{{user_id}}]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/users/bulk_unblock", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users", "bulk_unblock"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the user is unblocked\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.count).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// NOTE: the requests of this folder need one user id.",
+              "// The request \"The first user\" (the first request of the folder)",
+              "// stores it in the environment - therefore the order matters.",
+              "if (!pm.environment.get(\"user_id\")) {",
+              "  pm.environment.set(\"user_id\", \"1\");",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assistant",
+      "item": [
+        {
+          "name": "The first user",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?email_prefix=linus&limit=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"],
+              "query": [
+                { "key": "email_prefix", "value": "linus" },
+                { "key": "limit", "value": "1" }
+              ]
+            },
+            "description": "Stores the id of a demo user in the environment - the commands of this folder use it. NOTE: it is NOT the account of the runner, so that the session stays alive."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the first user is available\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.users.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.environment.set(\"user_id\", body.users[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "How many users are blocked?",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"How many users are blocked?\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/assistant/ask", "host": ["{{baseUrl}}"], "path": ["api", "v1", "assistant", "ask"] },
+            "description": "The question is translated into a plan, the plan is executed against the users API and the answer is assembled from the numbers of the database."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the question is answered with text\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.answer).to.be.a(\"string\");",
+                  "  pm.expect(body.answer).to.include(\"user\");",
+                  "});",
+                  "",
+                  "pm.test(\"the answer was produced by the API\", function () {",
+                  "  pm.expect(body.api_calls.length).to.be.above(0);",
+                  "  pm.expect(body.api_calls[0].status).to.eql(200);",
+                  "  pm.expect(body.data.totals.blocked).to.be.a(\"number\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Select the users with e-mails started with s or p",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"command\": \"select users with e-mails started with s or p\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/assistant/command", "host": ["{{baseUrl}}"], "path": ["api", "v1", "assistant", "command"] },
+            "description": "The bot controls the table: the answer contains the ids of the rows that have to be ticked."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const select = (body.ui_actions || []).find(function (action) { return action.type === \"select_users\"; });",
+                  "pm.test(\"the table is controlled by the bot\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(select).to.not.be.undefined;",
+                  "  pm.expect(select.ids.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Block the selected users (the bot)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"command\": \"block the selected users\",\n  \"selected_ids\": [{{user_id}}]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/assistant/command", "host": ["{{baseUrl}}"], "path": ["api", "v1", "assistant", "command"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the bot blocks the selection\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.answer).to.include(\"Blocked\");",
+                  "  pm.expect(body.api_calls.some(function (call) { return call.path.includes(\"bulk_block\"); })).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unblock the selected users (the bot)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"command\": \"unblock the selected users\",\n  \"selected_ids\": [{{user_id}}]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/assistant/command", "host": ["{{baseUrl}}"], "path": ["api", "v1", "assistant", "command"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test(\"the bot unblocks the selection\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(body.answer).to.include(\"Unblocked\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// NOTE: one user id for the commands of this folder.",
+              "if (!pm.environment.get(\"user_id\")) {",
+              "  pm.environment.set(\"user_id\", \"1\");",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

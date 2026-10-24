@@ -1,0 +1,223 @@
+<div class="container-xxl">
+
+  <%# ----------------------------------------------------------------------- %>
+  <%# The header of the page. %>
+  <%# ----------------------------------------------------------------------- %>
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <div>
+      <h1 class="h4 mb-1">User management</h1>
+      <p class="text-body-secondary mb-0" id="table-summary">
+        <%= pluralize(@total_count, "user") %> in the current view &mdash;
+        <%= pluralize(@active_count, "active") %>,
+        <%= pluralize(@blocked_count, "blocked") %>.
+        <% if @query.present? %>Filter: &ldquo;<%= @query %>&rdquo;.<% end %>
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <%= link_to "Ask the assistant", assistant_path, class: "btn btn-outline-secondary btn-sm" %>
+    </div>
+  </div>
+
+  <%# ----------------------------------------------------------------------- %>
+  <%# The assistant: it answers questions about the data and it controls the %>
+  <%# table (selection, filtering, sorting, blocking, deleting). %>
+  <%# ----------------------------------------------------------------------- %>
+  <div class="card mb-3" id="assistant-card">
+    <div class="card-header bg-body-tertiary d-flex align-items-center gap-2">
+      <h2 class="h6 mb-0"><i class="bi bi-stars me-1" aria-hidden="true"></i>Assistant</h2>
+      <span class="small text-body-secondary">
+        Ask a question or give a command, e.g. &ldquo;select users with e-mails started with s or p&rdquo;.
+      </span>
+    </div>
+    <div class="card-body">
+      <form id="assistant-form" class="row g-2" autocomplete="off">
+        <div class="col-12 col-md">
+          <label class="visually-hidden" for="<%= getUniqIdValue("assistant-input") %>">Question or command</label>
+          <input type="text" class="form-control" id="<%= getUniqIdValue("assistant-input") %>"
+                 name="command" placeholder="How many users are blocked?"
+                 data-assistant-input
+                 data-bs-toggle="tooltip"
+                 title="The assistant asks the REST API for the numbers - it never counts by itself.">
+        </div>
+        <div class="col-12 col-md-auto d-flex gap-2">
+          <button type="submit" class="btn btn-primary" id="assistant-run">
+            <i class="bi bi-send me-1" aria-hidden="true"></i>Run
+          </button>
+          <button type="button" class="btn btn-outline-secondary" id="assistant-clear"
+                  data-bs-toggle="tooltip" title="Clear the answer">
+            <i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Clear</span>
+          </button>
+        </div>
+      </form>
+
+      <div id="assistant-output" class="mt-3 d-none">
+        <div class="alert alert-info mb-2" role="status" id="assistant-answer">
+          <i class="bi bi-chat-left-text me-2" aria-hidden="true"></i>
+          <span class="assistant-answer-text"></span>
+        </div>
+        <details class="small text-body-secondary">
+          <summary>Show the API calls and the plan</summary>
+          <pre class="bg-body-tertiary border rounded p-2 mt-2 mb-0 assistant-plan" style="white-space: pre-wrap;"></pre>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <%# ----------------------------------------------------------------------- %>
+  <%# The filter of the table (a plain GET form - no javascript needed). %>
+  <%# ----------------------------------------------------------------------- %>
+  <div class="card mb-3">
+    <div class="card-body">
+      <%= form_with url: users_path, method: :get, local: true, id: "filter-form", class: "row g-2 align-items-end" do %>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="<%= getUniqIdValue("filter-q") %>">Search</label>
+          <input type="search" class="form-control" id="<%= getUniqIdValue("filter-q") %>"
+                 name="q" value="<%= @query %>" placeholder="Name or e-mail"
+                 data-bs-toggle="tooltip" title="The table is filtered by name and e-mail.">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="<%= getUniqIdValue("filter-status") %>">Status</label>
+          <select class="form-select" id="<%= getUniqIdValue("filter-status") %>" name="status"
+                  data-bs-toggle="tooltip" title="Show only the accounts with this status.">
+            <option value="all" <%= "selected" if @status_filter == "all" %>>All</option>
+            <option value="active" <%= "selected" if @status_filter == "active" %>>Active</option>
+            <option value="blocked" <%= "selected" if @status_filter == "blocked" %>>Blocked</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label" for="<%= getUniqIdValue("filter-sort") %>">Sort by</label>
+          <select class="form-select" id="<%= getUniqIdValue("filter-sort") %>" name="sort">
+            <% [["last_login_at", "Last login"], ["last_activity_at", "Last activity"],
+                ["name", "Name"], ["email", "E-mail"], ["position", "Position"], ["status", "Status"],
+                ["created_at", "Registered"]].each do |value, label| %>
+              <option value="<%= value %>" <%= "selected" if @sort_column == value %>><%= label %></option>
+            <% end %>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label" for="<%= getUniqIdValue("filter-direction") %>">Direction</label>
+          <select class="form-select" id="<%= getUniqIdValue("filter-direction") %>" name="direction">
+            <option value="desc" <%= "selected" if @sort_direction == "desc" %>>Descending</option>
+            <option value="asc" <%= "selected" if @sort_direction == "asc" %>>Ascending</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-1 d-grid">
+          <button type="submit" class="btn btn-secondary" data-bs-toggle="tooltip" title="Apply the filter">
+            <i class="bi bi-funnel" aria-hidden="true"></i><span class="visually-hidden">Apply</span>
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ----------------------------------------------------------------------- %>
+  <%# THE TABLE WITH THE TOOLBAR. %>
+  <%# IMPORTANT: the whole card (toolbar + table) is one POST form. The     %>
+  <%# toolbar buttons submit this form to different endpoints with the     %>
+  <%# `formaction` attribute - and there is NOT a single button inside a   %>
+  <%# table row.                                                              %>
+  <%# ----------------------------------------------------------------------- %>
+  <%= form_with url: block_users_path, method: :post, local: true, id: "selection-form" do %>
+    <div class="card">
+      <%# NOTE: the toolbar. It is always visible - only the state of the %>
+      <%# buttons changes (disabled when nothing is selected). %>
+      <div class="card-header bg-body-tertiary d-flex flex-wrap align-items-center gap-2">
+        <div class="btn-toolbar gap-2" role="toolbar" aria-label="Actions for the selected users">
+          <%# NOTE: the "Block" button - a button WITH text. %>
+          <button type="submit" class="btn btn-outline-danger" id="block-selected"
+                  formaction="<%= block_users_path %>" disabled
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Block the selected users">
+            <i class="bi bi-slash-circle me-1" aria-hidden="true"></i>Block
+          </button>
+
+          <%# NOTE: the "Unblock" button - an ICON only. %>
+          <button type="submit" class="btn btn-outline-secondary" id="unblock-selected"
+                  formaction="<%= unblock_users_path %>" disabled
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Unblock the selected users" aria-label="Unblock the selected users">
+            <i class="bi bi-unlock" aria-hidden="true"></i>
+          </button>
+
+          <%# NOTE: the "Delete" button - an ICON only. %>
+          <button type="submit" class="btn btn-outline-danger" id="delete-selected"
+                  formaction="<%= delete_users_path %>" disabled
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Delete the selected users" aria-label="Delete the selected users">
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="ms-auto small text-body-secondary" id="selection-info" aria-live="polite">
+          <span id="selection-count">0</span> of <%= pluralize(@users.size, "row") %> selected
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="users-table">
+            <caption class="visually-hidden">
+              The registered users. The table is sorted by <%= @sort_column.humanize.downcase %>
+              (<%= @sort_direction %>).
+            </caption>
+            <thead class="table-light">
+              <tr>
+                <%# NOTE: the header checkbox selects / deselects ALL the rows.
+                    It has NO label - only a tooltip. %>
+                <th scope="col" class="text-center checkbox-column" style="width: 3rem;">
+                  <input type="checkbox" class="form-check-input" id="select-all"
+                         data-bs-toggle="tooltip" data-bs-placement="top"
+                         title="Select or deselect all users"
+                         aria-label="Select or deselect all users">
+                </th>
+                <th scope="col"><%= sort_link(:name, "Name") %></th>
+                <th scope="col"><%= sort_link(:email, "E-mail") %></th>
+                <th scope="col"><%= sort_link(:position, "Position") %></th>
+                <th scope="col"><%= sort_link(:last_login_at, "Last login") %></th>
+                <th scope="col"><%= sort_link(:last_activity_at, "Last activity") %></th>
+                <th scope="col" class="text-center"><%= sort_link(:status, "Status") %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if @users.empty? %>
+                <tr>
+                  <td colspan="7" class="text-center text-body-secondary py-4">
+                    <i class="bi bi-inbox me-2" aria-hidden="true"></i>No user matches the current filter.
+                  </td>
+                </tr>
+              <% end %>
+
+              <% @users.each do |user| %>
+                <tr data-user-id="<%= user.id %>" data-blocked="<%= user.blocked? %>">
+                  <%# IMPORTANT: the leftmost column only holds a checkbox -
+                      there is no button, no link and no label in the rows. %>
+                  <td class="text-center checkbox-column">
+                    <input type="checkbox" class="form-check-input row-checkbox"
+                           name="user_ids[]" value="<%= user.id %>"
+                           aria-label="Select <%= user.name %> (<%= user.email %>)"
+                           data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="Select <%= user.email %>">
+                  </td>
+                  <td class="text-nowrap"><%= user.name %></td>
+                  <td class="text-nowrap"><%= user.email %></td>
+                  <td class="text-nowrap"><%= user.position.presence || "—" %></td>
+                  <td><%= format_timestamp(user.last_login_at) %></td>
+                  <td><%= format_timestamp(user.last_activity_at) %></td>
+                  <td class="text-center"><%= status_badge(user) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-footer bg-body-tertiary small text-body-secondary d-flex flex-wrap justify-content-between gap-2">
+        <span>
+          Sorted by <strong><%= @sort_column.humanize.downcase %></strong>
+          (<%= @sort_direction == "asc" ? "ascending" : "descending" %>).
+        </span>
+        <span>Use the checkboxes to select the rows, then use the toolbar above the table.</span>
+      </div>
+    </div>
+  <% end %>
+</div>

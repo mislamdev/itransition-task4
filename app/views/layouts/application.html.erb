@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= page_title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="User management panel: registration, authentication and user administration.">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# NOTE: Bootstrap and Bootstrap Icons are served from the application itself
+        (app/assets), so the panel also works without an internet connection. %>
+    <%= stylesheet_link_tag "bootstrap.min.css" %>
+    <%= stylesheet_link_tag "bootstrap-icons.min.css" %>
+    <%= stylesheet_link_tag "application.css" %>
+    <%= javascript_include_tag "bootstrap.bundle.min.js" %>
+    <%= javascript_include_tag "app.js", defer: true %>
+  </head>
+
+  <body class="d-flex flex-column min-vh-100 bg-body-tertiary">
+    <%# NOTE: the standard navigation header of the application. %>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <%= link_to root_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
+          <i class="bi bi-people-fill" aria-hidden="true"></i>
+          <span>User Management</span>
+        <% end %>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#<%= getUniqIdValue("main-navbar") %>"
+                aria-controls="<%= getUniqIdValue("main-navbar") %>" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="<%= getUniqIdValue("main-navbar") %>">
+          <% if signed_in? %>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <%= link_to "Users", users_path, class: "nav-link #{'active' if controller_name == 'users'}" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Assistant", assistant_path, class: "nav-link #{'active' if controller_name == 'assistant'}" %>
+              </li>
+            </ul>
+
+            <ul class="navbar-nav align-items-lg-center">
+              <li class="nav-item">
+                <span class="navbar-text me-2" title="You are signed in with this account">
+                  <i class="bi bi-person-circle me-1" aria-hidden="true"></i><%= current_user.email %>
+                </span>
+              </li>
+              <li class="nav-item">
+                <%# NOTE: the sign out button is a form button - no javascript needed. %>
+                <%= button_to "Sign out", logout_path, method: :delete,
+                              class: "btn btn-outline-light btn-sm",
+                              form: { class: "d-inline" } %>
+              </li>
+            </ul>
+          <% else %>
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item"><%= link_to "Sign in", login_path, class: "nav-link" %></li>
+              <li class="nav-item"><%= link_to "Register", signup_path, class: "nav-link" %></li>
+            </ul>
+          <% end %>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container-fluid py-4 flex-grow-1">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+
+    <footer class="border-top bg-body py-3 mt-auto">
+      <div class="container-fluid small text-body-secondary d-flex flex-wrap justify-content-between gap-2">
+        <span>User Management &mdash; Ruby on Rails application.</span>
+        <span>E-mail uniqueness is enforced by a UNIQUE INDEX in PostgreSQL.</span>
+      </div>
+    </footer>
+  </body>
+</html>

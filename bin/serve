@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Starts the application in the production mode on 127.0.0.1.
+#
+# IMPORTANT: the process listens on the loopback interface only - the public
+# access is provided by the TLS tunnel of bin/tunnel.
+#
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+PORT="${PORT:-3100}"
+export RAILS_ENV=production
+export PORT
+# NOTE: the server listens on the loopback interface only.
+export BIND="${BIND:-tcp://127.0.0.1:${PORT}}"
+# NOTE: the assistant calls the own API of the application over HTTP.
+export ASSISTANT_API_BASE_URL="${ASSISTANT_API_BASE_URL:-http://127.0.0.1:${PORT}}"
+
+echo "== preparing the database =="
+bundle exec rails db:prepare
+bundle exec rails db:seed
+
+echo "== building the assets =="
+bundle exec rails assets:precompile
+
+echo "== starting the server on ${BIND} =="
+exec bundle exec puma -C config/puma.rb

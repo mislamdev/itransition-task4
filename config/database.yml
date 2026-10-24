@@ -1,0 +1,26 @@
+# NOTE: PostgreSQL is used on purpose. The task requires a REAL unique index in the
+# database so that e-mail uniqueness is guaranteed by the storage engine even when
+# several processes/sources write at the same time. SQLite would also do it, but
+# PostgreSQL gives us proper concurrent-write behaviour and row level locking.
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("DATABASE_HOST", "localhost") %>
+  port: <%= ENV.fetch("DATABASE_PORT", 5432) %>
+  username: <%= ENV.fetch("DATABASE_USER", ENV["USER"]) %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "") %>
+  variables:
+    statement_timeout: 15000
+
+development:
+  <<: *default
+  database: user_management_development
+
+test:
+  <<: *default
+  database: user_management_test
+
+production:
+  <<: *default
+  database: <%= ENV.fetch("DATABASE_NAME", "user_management_production") %>

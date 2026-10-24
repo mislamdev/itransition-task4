@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+#
+# Publishes the application over the internet with a Cloudflare tunnel.
+#
+# The tunnel terminates the TLS, therefore the application itself only listens
+# on 127.0.0.1 (see bin/serve). The public URL is printed as soon as the
+# tunnel is established.
+#
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+PORT="${PORT:-3100}"
+TUNNEL_LOG="${TUNNEL_LOG:-tmp/tunnel.log}"
+
+mkdir -p tmp
+
+echo "== starting the tunnel for http://127.0.0.1:${PORT} =="
+cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:${PORT}" > "${TUNNEL_LOG}" 2>&1 &
+
+TUNNEL_PID=$!
+trap 'kill "${TUNNEL_PID}" 2>/dev/null || true' EXIT
+
+# Small function: waits for the public URL inside the log of the tunnel.
+for _ in $(seq 1 40); do
+  URL="$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "${TUNNEL_LOG}" | head -1 || true)"
+  if [ -n "${URL}" ]; then
+    echo ""
+    echo "=========================================================="
+    echo " The application is publicly available at:"
+    echo ""
+    echo "   ${URL}"
+    echo ""
+    echo " Sign in with one of the demo accounts, e.g."
+    echo "   e-mail: ada@example.com"
+    echo "   password: demo"
+    echo "=========================================================="
+    echo ""
+    break
+  fi
+  sleep 1
+done
+
+wait "${TUNNEL_PID}"
