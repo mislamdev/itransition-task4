@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The launch agent of the deployed application.
+
+  IMPORTANT: the agent keeps the production server of Rails alive (and starts
+  it again if it stops). The public access is provided by the tunnel
+  (bin/tunnel), therefore the tunnel URL stays the same when the server is
+  restarted.
+
+  Start it with:
+    launchctl load ~/Library/LaunchAgents/com.task4.user-management.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.task4.user-management</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/mislam/Projects/iTransition/Task#4/bin/serve</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/mislam/Projects/iTransition/Task#4</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PORT</key>
+    <string>3100</string>
+    <key>RAILS_ENV</key>
+    <string>production</string>
+    <key>RAILS_MAX_THREADS</key>
+    <string>5</string>
+    <key>PATH</key>
+    <string>/Users/mislam/.gem/ruby/4.0.0/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/mislam/Projects/iTransition/Task#4/tmp/production.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/mislam/Projects/iTransition/Task#4/tmp/production.log</string>
+</dict>
+</plist>

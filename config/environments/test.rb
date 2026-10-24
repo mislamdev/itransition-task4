@@ -25,8 +25,11 @@ Rails.application.configure do
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
 
-  # Disable request forgery protection in test environment.
-  config.action_controller.allow_forgery_protection = false
+  # IMPORTANT: the CSRF protection is ENABLED in the test environment. The
+  # toolbar of the table submits one form to three different endpoints (with
+  # the HTML attribute `formaction`) - only a test with the real protection
+  # finds out that such a form needs a token that is valid for every action.
+  config.action_controller.allow_forgery_protection = true
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr

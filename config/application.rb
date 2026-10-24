@@ -30,6 +30,16 @@ module Task4
     # the panel sends the X-CSRF-Token header.
     config.action_controller.default_protect_from_forgery = false
 
+    # NOTE: the "per form" CSRF tokens are switched off on purpose.
+    #
+    # IMPORTANT: the toolbar of the user table is ONE form that is submitted to
+    # THREE different endpoints (the HTML attribute `formaction` of the
+    # buttons: block, unblock, delete). A per form token is bound to the
+    # action of the form, therefore it would be rejected by the other two
+    # endpoints. The token of the session is valid for every action of the
+    # session - and it is still masked and single use.
+    config.action_controller.per_form_csrf_tokens = false
+
     # NOTE: the panel is a business application, not a landing page.
     config.time_zone = "UTC"
     config.active_record.default_timezone = :utc

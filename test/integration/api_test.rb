@@ -13,7 +13,7 @@ class ApiTest < ActionDispatch::IntegrationTest
 
   # NOTE: the API is protected like the rest of the application.
   test "the API rejects a request without a session" do
-    delete logout_path
+    delete logout_path, params: { authenticity_token: csrf_token }
     get "/api/v1/users"
 
     assert_response :unauthorized
@@ -65,7 +65,7 @@ class ApiTest < ActionDispatch::IntegrationTest
   end
 
   test "the bulk API blocks the selected users" do
-    post "/api/v1/users/bulk_block", params: { user_ids: [@alice.id] }
+    post_json_with_csrf "/api/v1/users/bulk_block", user_ids: [@alice.id]
 
     assert_response :success
     assert_equal 1, response.parsed_body["count"]

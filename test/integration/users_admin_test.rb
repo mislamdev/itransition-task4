@@ -67,7 +67,7 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
 
   # NOTE: the toolbar action "Block".
   test "the toolbar blocks the selected users" do
-    post block_users_path, params: { user_ids: [@alice.id, @carol.id] }
+    post_with_csrf block_users_path, { user_ids: [@alice.id, @carol.id] }
 
     assert_redirected_to users_path
     assert @alice.reload.blocked?
@@ -79,7 +79,7 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
 
   # NOTE: the toolbar action "Unblock".
   test "the toolbar unblocks the selected users" do
-    post unblock_users_path, params: { user_ids: [@bob.id] }
+    post_with_csrf unblock_users_path, { user_ids: [@bob.id] }
 
     assert_redirected_to users_path
     assert_not @bob.reload.blocked?
@@ -90,7 +90,7 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
   # IMPORTANT: the rows are really deleted, they are not flagged.
   test "the toolbar deletes the selected users" do
     assert_difference "User.count", -2 do
-      post delete_users_path, params: { user_ids: [@alice.id, @carol.id] }
+      post_with_csrf delete_users_path, { user_ids: [@alice.id, @carol.id] }
     end
 
     assert_redirected_to users_path
@@ -100,7 +100,7 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
 
   test "an empty selection shows a message and changes nothing" do
     assert_no_difference "User.count" do
-      post block_users_path, params: { user_ids: [] }
+      post_with_csrf block_users_path, { user_ids: [] }
     end
 
     follow_redirect!
@@ -109,7 +109,7 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
 
   # IMPORTANT: everybody may block or delete himself.
   test "a user can block himself" do
-    post block_users_path, params: { user_ids: [@user.id] }
+    post_with_csrf block_users_path, { user_ids: [@user.id] }
 
     assert_redirected_to users_path
     assert @user.reload.blocked?
@@ -121,7 +121,7 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
 
   test "a user can delete himself" do
     assert_difference "User.count", -1 do
-      post delete_users_path, params: { user_ids: [@user.id] }
+      post_with_csrf delete_users_path, { user_ids: [@user.id] }
     end
 
     assert_redirected_to login_path
@@ -156,7 +156,7 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
   # NOTE: no browser alert() is used anywhere - the messages are Bootstrap
   # alerts inside the page.
   test "the status messages are rendered inside the page" do
-    post block_users_path, params: { user_ids: [@alice.id] }
+    post_with_csrf block_users_path, { user_ids: [@alice.id] }
     follow_redirect!
 
     assert_select ".alert-success", 1

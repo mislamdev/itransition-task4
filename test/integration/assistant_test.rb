@@ -15,7 +15,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   # PART 2: questions about the data.
   # ---------------------------------------------------------------------------
   test "the assistant counts the blocked users" do
-    post "/api/v1/assistant/ask", params: { question: "How many users are blocked?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "How many users are blocked?"
 
     assert_response :success
     body = response.parsed_body
@@ -24,14 +24,14 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant counts all the users" do
-    post "/api/v1/assistant/ask", params: { question: "how many users are there in total?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "how many users are there in total?"
 
     body = response.parsed_body
     assert_match(/4 users/, body["answer"])
   end
 
   test "the assistant counts the users that logged in during the last 7 days" do
-    post "/api/v1/assistant/ask", params: { question: "how many users logged in during the last 7 days?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "how many users logged in during the last 7 days?"
 
     body = response.parsed_body
     # NOTE: the owner has signed in during the setup, therefore three accounts
@@ -40,7 +40,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant counts the users that never logged in" do
-    post "/api/v1/assistant/ask", params: { question: "how many users have never logged in?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "how many users have never logged in?"
 
     body = response.parsed_body
     # NOTE: the owner has signed in during the setup, therefore only the
@@ -51,7 +51,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   # NOTE: the question about the registration uses the registration counter,
   # not the login counter.
   test "the assistant counts the registered users of the last 7 days" do
-    post "/api/v1/assistant/ask", params: { question: "how many users registered this week?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "how many users registered this week?"
 
     body = response.parsed_body
     assert_equal "registration", body["plan"]["metric"]
@@ -60,7 +60,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant lists the users with an e-mail prefix" do
-    post "/api/v1/assistant/ask", params: { question: "show the users whose e-mail starts with s" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "show the users whose e-mail starts with s"
 
     body = response.parsed_body
     assert_match(/sarah@gmail\.com/, body["answer"])
@@ -68,7 +68,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant reports the breakdown by domain" do
-    post "/api/v1/assistant/ask", params: { question: "how many users are there per e-mail domain?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "how many users are there per e-mail domain?"
 
     body = response.parsed_body
     assert_match(/example\.com: 2/, body["answer"])
@@ -76,7 +76,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant describes one user" do
-    post "/api/v1/assistant/ask", params: { question: "what is the status of sarah@gmail.com?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "what is the status of sarah@gmail.com?"
 
     body = response.parsed_body
     assert_match(/Sarah/, body["answer"])
@@ -84,7 +84,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "an empty question is rejected" do
-    post "/api/v1/assistant/ask", params: { question: "" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: ""
 
     assert_response :unprocessable_entity
   end
@@ -93,7 +93,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   # PART 3: commands that control the dashboard.
   # ---------------------------------------------------------------------------
   test "the assistant selects the users with e-mails started with s or p" do
-    post "/api/v1/assistant/command", params: { command: "select users with e-mails started with s or p" }
+    post_json_with_csrf "/api/v1/assistant/command", command: "select users with e-mails started with s or p"
 
     assert_response :success
     body = response.parsed_body
@@ -105,10 +105,9 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant blocks the selected users" do
-    post "/api/v1/assistant/command", params: {
-      command: "block the selected users",
-      selected_ids: [@alice.id]
-    }
+    post_json_with_csrf "/api/v1/assistant/command",
+                        command: "block the selected users",
+                        selected_ids: [@alice.id]
 
     body = response.parsed_body
     assert_match(/Blocked 1 user/, body["answer"])
@@ -117,10 +116,9 @@ class AssistantTest < ActionDispatch::IntegrationTest
 
   test "the assistant deletes the selected users" do
     assert_difference "User.count", -1 do
-      post "/api/v1/assistant/command", params: {
-        command: "delete the selected users",
-        selected_ids: [@alice.id]
-      }
+      post_json_with_csrf "/api/v1/assistant/command",
+                          command: "delete the selected users",
+                          selected_ids: [@alice.id]
     end
 
     body = response.parsed_body
@@ -128,7 +126,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant clears the selection" do
-    post "/api/v1/assistant/command", params: { command: "clear the selection" }
+    post_json_with_csrf "/api/v1/assistant/command", command: "clear the selection"
 
     body = response.parsed_body
     assert body["ui_actions"].any? { |action| action["type"] == "clear_selection" }
@@ -136,7 +134,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant changes the sort order" do
-    post "/api/v1/assistant/command", params: { command: "sort by e-mail" }
+    post_json_with_csrf "/api/v1/assistant/command", command: "sort by e-mail"
 
     body = response.parsed_body
     sort_action = body["ui_actions"].find { |action| action["type"] == "sort_by" }
@@ -144,7 +142,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   end
 
   test "the assistant filters the table" do
-    post "/api/v1/assistant/command", params: { command: "show only blocked users" }
+    post_json_with_csrf "/api/v1/assistant/command", command: "show only blocked users"
 
     body = response.parsed_body
     filter_action = body["ui_actions"].find { |action| action["type"] == "set_filter" }
@@ -154,7 +152,7 @@ class AssistantTest < ActionDispatch::IntegrationTest
   # NOTE: the answer of the assistant is never produced by a language model -
   # the numbers come from the database.
   test "the answer contains the numbers of the database and not of a model" do
-    post "/api/v1/assistant/ask", params: { question: "how many users are blocked?" }
+    post_json_with_csrf "/api/v1/assistant/ask", question: "how many users are blocked?"
 
     body = response.parsed_body
     assert_equal User.blocked.count, body["data"]["totals"]["blocked"]

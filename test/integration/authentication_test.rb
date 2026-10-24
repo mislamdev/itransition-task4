@@ -31,9 +31,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
   # immediately and the message is shown.
   test "a user is registered right away" do
     assert_difference "User.count", 1 do
-      post signup_path, params: {
-        user: { name: "New User", email: "new@example.com", password: "a", password_confirmation: "a" }
-      }
+      post_with_csrf signup_path, { user: { name: "New User", email: "new@example.com", password: "a", password_confirmation: "a" } }
     end
 
     assert_redirected_to login_path
@@ -46,9 +44,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     create_user(email: "taken@example.com")
 
     assert_no_difference "User.count" do
-      post signup_path, params: {
-        user: { name: "Other", email: "taken@example.com", password: "a", password_confirmation: "a" }
-      }
+      post_with_csrf signup_path, { user: { name: "Other", email: "taken@example.com", password: "a", password_confirmation: "a" } }
     end
 
     assert_response :unprocessable_entity
@@ -115,7 +111,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     user = create_user
     sign_in(user)
 
-    delete logout_path
+    delete logout_path, params: { authenticity_token: csrf_token }
 
     assert_redirected_to login_path
     follow_redirect!
@@ -135,9 +131,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     user.destroy!
 
     assert_difference "User.count", 1 do
-      post signup_path, params: {
-        user: { name: "Again", email: "again@example.com", password: "a", password_confirmation: "a" }
-      }
+      post_with_csrf signup_path, { user: { name: "Again", email: "again@example.com", password: "a", password_confirmation: "a" } }
     end
 
     assert_redirected_to login_path
