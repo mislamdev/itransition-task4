@@ -65,6 +65,19 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
     assert_equal ["alice@example.com", "bob@example.com", "carol@example.com", "owner@example.com"], emails
   end
 
+  # NOTE: the sorted column has to be visible - the label is marked and the
+  # icon shows the direction of the order.
+  test "the sorted column is marked" do
+    get users_path, params: { sort: "email", direction: "asc" }
+
+    assert_select "table#users-table thead th[aria-sort=?]", "ascending" do
+      assert_select "a.table-sort-link.is-active", text: /E-mail/
+      assert_select "i.bi-chevron-up"
+    end
+
+    assert_select "table#users-table thead th[aria-sort=?]", "none", count: 4
+  end
+
   # NOTE: the toolbar action "Block".
   test "the toolbar blocks the selected users" do
     post_with_csrf block_users_path, { user_ids: [@alice.id, @carol.id] }

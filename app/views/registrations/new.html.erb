@@ -21,13 +21,17 @@
 <% end %>
 
 <%= form_with model: @user, url: signup_path, method: :post, local: true, id: "registration-form" do |f| %>
+  <%# NOTE: every field has its own control - the icons are centred in the %>
+  <%# input and not in the whole field. %>
   <div class="auth-field">
     <%= f.label :name, "Name", class: "form-label", for: getUniqIdValue("user-name") %>
-    <i class="bi bi-person auth-field-icon" aria-hidden="true"></i>
-    <input type="text" name="user[name]" id="<%= getUniqIdValue("user-name") %>"
-           value="<%= @user.name %>" required maxlength="120" autocomplete="name"
-           class="form-control <%= 'is-invalid' if @user.errors[:name].any? %>"
-           data-bs-toggle="tooltip" title="The name that is shown in the user table.">
+    <div class="auth-field-control">
+      <i class="bi bi-person auth-field-icon" aria-hidden="true"></i>
+      <input type="text" name="user[name]" id="<%= getUniqIdValue("user-name") %>"
+             value="<%= @user.name %>" required maxlength="120" autocomplete="name"
+             class="form-control <%= 'is-invalid' if @user.errors[:name].any? %>"
+             data-bs-toggle="tooltip" title="The name that is shown in the user table.">
+    </div>
     <% if @user.errors[:name].any? %>
       <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:name).to_sentence %></div>
     <% end %>
@@ -35,12 +39,14 @@
 
   <div class="auth-field">
     <%= f.label :email, "E-mail", class: "form-label", for: getUniqIdValue("user-email") %>
-    <i class="bi bi-envelope auth-field-icon" aria-hidden="true"></i>
-    <input type="email" name="user[email]" id="<%= getUniqIdValue("user-email") %>"
-           value="<%= @user.email %>" required autocomplete="username"
-           class="form-control <%= 'is-invalid' if @user.errors[:email].any? %>"
-           data-bs-toggle="tooltip"
-           title="The e-mail must be unique - a UNIQUE INDEX in the database guarantees it.">
+    <div class="auth-field-control">
+      <i class="bi bi-envelope auth-field-icon" aria-hidden="true"></i>
+      <input type="email" name="user[email]" id="<%= getUniqIdValue("user-email") %>"
+             value="<%= @user.email %>" required autocomplete="username"
+             class="form-control <%= 'is-invalid' if @user.errors[:email].any? %>"
+             data-bs-toggle="tooltip"
+             title="The e-mail must be unique - a UNIQUE INDEX in the database guarantees it.">
+    </div>
     <% if @user.errors[:email].any? %>
       <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:email).to_sentence %></div>
     <% end %>
@@ -48,16 +54,18 @@
 
   <div class="auth-field">
     <%= f.label :password, "Password", class: "form-label", for: getUniqIdValue("user-password") %>
-    <i class="bi bi-key auth-field-icon" aria-hidden="true"></i>
-    <input type="password" name="user[password]" id="<%= getUniqIdValue("user-password") %>"
-           required autocomplete="new-password"
-           class="form-control <%= 'is-invalid' if @user.errors[:password].any? %>"
-           data-bs-toggle="tooltip"
-           title="Any non-empty password is accepted - even a single character.">
-    <button type="button" class="auth-field-action" data-toggle-password="<%= getUniqIdValue("user-password") %>"
-            aria-label="Show the password" data-bs-toggle="tooltip" title="Show the password">
-      <i class="bi bi-eye" aria-hidden="true"></i>
-    </button>
+    <div class="auth-field-control">
+      <i class="bi bi-key auth-field-icon" aria-hidden="true"></i>
+      <input type="password" name="user[password]" id="<%= getUniqIdValue("user-password") %>"
+             required autocomplete="new-password"
+             class="form-control <%= 'is-invalid' if @user.errors[:password].any? %>"
+             data-bs-toggle="tooltip"
+             title="Any non-empty password is accepted - even a single character.">
+      <button type="button" class="auth-field-action" data-toggle-password="<%= getUniqIdValue("user-password") %>"
+              aria-label="Show the password" data-bs-toggle="tooltip" title="Show the password">
+        <i class="bi bi-eye" aria-hidden="true"></i>
+      </button>
+    </div>
     <% if @user.errors[:password].any? %>
       <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password).to_sentence %></div>
     <% end %>
@@ -65,12 +73,14 @@
 
   <div class="auth-field">
     <%= f.label :password_confirmation, "Confirm password", class: "form-label", for: getUniqIdValue("user-password-confirmation") %>
-    <i class="bi bi-key-fill auth-field-icon" aria-hidden="true"></i>
-    <input type="password" name="user[password_confirmation]"
-           id="<%= getUniqIdValue("user-password-confirmation") %>"
-           required autocomplete="new-password"
-           class="form-control <%= 'is-invalid' if @user.errors[:password_confirmation].any? %>"
-           data-bs-toggle="tooltip" title="Repeat the password to avoid typos.">
+    <div class="auth-field-control">
+      <i class="bi bi-key-fill auth-field-icon" aria-hidden="true"></i>
+      <input type="password" name="user[password_confirmation]"
+             id="<%= getUniqIdValue("user-password-confirmation") %>"
+             required autocomplete="new-password"
+             class="form-control <%= 'is-invalid' if @user.errors[:password_confirmation].any? %>"
+             data-bs-toggle="tooltip" title="Repeat the password to avoid typos.">
+    </div>
     <% if @user.errors[:password_confirmation].any? %>
       <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password_confirmation).to_sentence %></div>
     <% end %>

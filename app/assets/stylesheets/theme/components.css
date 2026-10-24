@@ -132,6 +132,11 @@
   background-color: var(--theme-primary-softer);
 }
 
+.account-chip:focus-visible {
+  outline: 0;
+  box-shadow: var(--theme-shadow-focus);
+}
+
 .account-chip.dropdown-toggle::after {
   margin-left: 0.25rem;
   border-top-color: var(--theme-text-subtle);
@@ -247,7 +252,9 @@
    THE TABLE WITH THE TOOLBAR
    -------------------------------------------------------------------------- */
 .table-card {
-  overflow: hidden;
+  /* NOTE: no `overflow: hidden` here - it would break the sticky elements
+     inside the card (the toolbar and the header of the table). The rounded
+     corners come from the card itself. */
   border-radius: var(--theme-radius-lg);
   box-shadow: var(--theme-shadow-md);
 }
@@ -272,6 +279,32 @@
   white-space: nowrap;
   vertical-align: middle;
   padding: 0.75rem 0.9rem;
+}
+
+/* NOTE: the toolbar of the table stays visible while the rows are scrolled -
+   the actions are always reachable.
+
+   IMPORTANT: the sticky elements are only used on a wide screen. A container
+   with `overflow-x: auto` (the wrapper of the table) breaks the sticky
+   behaviour of its children - on a small screen the table scrolls sideways
+   instead and the toolbar simply stays at the top of the card. */
+@media (min-width: 992px) {
+  .table-responsive {
+    overflow-x: visible;
+  }
+
+  .table-card .card-header {
+    position: sticky;
+    top: var(--theme-navbar-height);
+    z-index: 1010;
+    background-color: var(--theme-surface);
+  }
+
+  .table-card .table thead th {
+    position: sticky;
+    top: calc(var(--theme-navbar-height) + var(--theme-toolbar-height));
+    z-index: 1009;
+  }
 }
 
 .table-card .table tbody td {
@@ -310,13 +343,23 @@
   color: var(--theme-text);
 }
 
+.table-sort-link:focus-visible {
+  outline: 0;
+  border-radius: var(--theme-radius-xs);
+  box-shadow: var(--theme-shadow-focus);
+}
+
 .table-sort-link.is-active {
   color: var(--theme-primary);
 }
 
 .table-sort-link .sort-icon {
   font-size: 0.65rem;
-  opacity: 0.6;
+  opacity: 0.5;
+}
+
+.table-sort-link.is-active .sort-icon {
+  opacity: 1;
 }
 
 .cell-muted {
@@ -479,6 +522,14 @@
   box-shadow: var(--theme-shadow-focus);
 }
 
+.toolbar-search input:focus-visible {
+  border-color: var(--theme-primary);
+}
+
+.toolbar-search i {
+  color: var(--theme-text-muted);
+}
+
 .toolbar-select {
   height: 2.3rem;
   width: auto;
@@ -555,6 +606,11 @@
   background-color: var(--theme-primary-softer);
 }
 
+.theme-toggle:focus-visible {
+  outline: 0;
+  box-shadow: var(--theme-shadow-focus);
+}
+
 /* NOTE: the top of the panel of the sign in page - the brand and the switch. */
 .auth-panel-top {
   display: flex;
@@ -624,7 +680,17 @@
   margin-bottom: var(--theme-space-3);
 }
 
-.auth-field .form-control {
+/* NOTE: the control of a field - the input with its icons.
+   IMPORTANT: the wrapper is the element the icons are positioned in. Without
+   it the icons would be centred on the WHOLE field (the label + the input) and
+   they would sit at the top of the box instead of in the middle of the input. */
+.auth-field-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-field-control .form-control {
   height: 3.15rem;
   border-radius: var(--theme-radius-md);
   padding-left: 2.85rem;
@@ -632,16 +698,18 @@
   font-size: var(--theme-font-size-base);
 }
 
+/* the leading icon - it shows WHAT the field is */
 .auth-field-icon {
   position: absolute;
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--theme-text-subtle);
+  color: var(--theme-text-muted);
   font-size: 1.05rem;
   pointer-events: none;
 }
 
+/* the trailing action - it shows WHAT can be done with the field */
 .auth-field-action {
   position: absolute;
   right: 0.6rem;
@@ -649,15 +717,22 @@
   transform: translateY(-50%);
   border: 0;
   background: transparent;
-  color: var(--theme-text-subtle);
+  color: var(--theme-text-muted);
   padding: 0.35rem 0.45rem;
   border-radius: var(--theme-radius-xs);
   line-height: 1;
+  cursor: pointer;
 }
 
 .auth-field-action:hover {
   color: var(--theme-text);
   background-color: var(--theme-surface-muted);
+}
+
+.auth-field-action:focus-visible {
+  outline: 0;
+  box-shadow: var(--theme-shadow-focus);
+  color: var(--theme-primary);
 }
 
 .auth-options {
@@ -873,6 +948,27 @@
 
   .toolbar-count {
     margin-left: 0;
+    width: 100%;
+  }
+
+  /* NOTE: on a small screen the table is sorted with the links in the header,
+     therefore the two selects of the toolbar are not needed - they would push
+     the actions out of the view. */
+  .toolbar-select-sort {
+    display: none;
+  }
+
+  /* NOTE: the hint of the assistant would take three lines next to the title
+     on a small screen - the examples on the assistant page explain it. */
+  .assistant-hint {
+    display: none;
+  }
+
+  .toolbar-search input {
+    width: 100%;
+  }
+
+  .toolbar-filter {
     width: 100%;
   }
 }

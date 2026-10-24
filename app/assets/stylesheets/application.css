@@ -21,6 +21,18 @@
   scroll-behavior: auto !important;
 }
 
+/* NOTE: the preference of the operating system - the same rule, but written
+   down explicitly, so that the intention is documented. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* NOTE: a plain surface, no image, no gradient - the table stands on a
    neutral background, like a business application. */
 body {

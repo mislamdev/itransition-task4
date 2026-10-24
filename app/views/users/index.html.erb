@@ -29,7 +29,7 @@
     <div class="card-header d-flex align-items-center gap-2">
       <i class="bi bi-stars" aria-hidden="true"></i>
       <h2 class="h6 mb-0">Assistant</h2>
-      <span class="small fw-normal text-body-secondary">
+      <span class="small fw-normal text-body-secondary assistant-hint">
         Ask a question or give a command, e.g. &ldquo;select users with e-mails started with s or p&rdquo;.
       </span>
     </div>
@@ -135,7 +135,7 @@
               <option value="blocked" <%= "selected" if @status_filter == "blocked" %>>Blocked</option>
             </select>
 
-            <select form="filter-form" name="sort" class="form-select toolbar-select"
+            <select form="filter-form" name="sort" class="form-select toolbar-select toolbar-select-sort"
                     aria-label="Sort by" data-bs-toggle="tooltip" title="The column the table is sorted by.">
               <% [["last_login_at", "Last login"], ["last_activity_at", "Last activity"],
                   ["name", "Name"], ["email", "E-mail"], ["position", "Position"], ["status", "Status"],
@@ -144,7 +144,7 @@
               <% end %>
             </select>
 
-            <select form="filter-form" name="direction" class="form-select toolbar-select"
+            <select form="filter-form" name="direction" class="form-select toolbar-select toolbar-select-sort"
                     aria-label="Direction" data-bs-toggle="tooltip" title="The direction of the order.">
               <option value="desc" <%= "selected" if @sort_direction == "desc" %>>Descending</option>
               <option value="asc" <%= "selected" if @sort_direction == "asc" %>>Ascending</option>
@@ -175,11 +175,11 @@
                          title="Select or deselect all users"
                          aria-label="Select or deselect all users">
                 </th>
-                <th scope="col"><%= sort_link(:name, "Name") %></th>
-                <th scope="col"><%= sort_link(:email, "E-mail") %></th>
-                <th scope="col" class="text-center"><%= sort_link(:status, "Status") %></th>
-                <th scope="col"><%= sort_link(:last_login_at, "Last login") %></th>
-                <th scope="col"><%= sort_link(:last_activity_at, "Last activity") %></th>
+                <th scope="col" aria-sort="<%= aria_sort_for(:name) %>"><%= sort_link(:name, "Name") %></th>
+                <th scope="col" aria-sort="<%= aria_sort_for(:email) %>"><%= sort_link(:email, "E-mail") %></th>
+                <th scope="col" class="text-center" aria-sort="<%= aria_sort_for(:status) %>"><%= sort_link(:status, "Status") %></th>
+                <th scope="col" aria-sort="<%= aria_sort_for(:last_login_at) %>"><%= sort_link(:last_login_at, "Last login") %></th>
+                <th scope="col" aria-sort="<%= aria_sort_for(:last_activity_at) %>"><%= sort_link(:last_activity_at, "Last activity") %></th>
               </tr>
             </thead>
             <tbody>

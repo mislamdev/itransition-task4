@@ -12,27 +12,31 @@
       of the field (the "for" attribute points to the id of the input). %>
   <div class="auth-field">
     <%= label_tag :email, "E-mail", class: "form-label", for: getUniqIdValue("login-email") %>
-    <i class="bi bi-envelope auth-field-icon" aria-hidden="true"></i>
-    <input type="email" name="email" id="<%= getUniqIdValue("login-email") %>"
-           value="<%= @email %>" required autofocus autocomplete="username"
-           class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
-           data-bs-toggle="tooltip"
-           title="The e-mail address you registered with.">
+    <div class="auth-field-control">
+      <i class="bi bi-envelope auth-field-icon" aria-hidden="true"></i>
+      <input type="email" name="email" id="<%= getUniqIdValue("login-email") %>"
+             value="<%= @email %>" required autofocus autocomplete="username"
+             class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
+             data-bs-toggle="tooltip"
+             title="The e-mail address you registered with.">
+    </div>
   </div>
 
   <%# NOTE: the password with the button that shows the password. %>
   <div class="auth-field">
     <%= label_tag :password, "Password", class: "form-label", for: getUniqIdValue("login-password") %>
-    <i class="bi bi-key auth-field-icon" aria-hidden="true"></i>
-    <input type="password" name="password" id="<%= getUniqIdValue("login-password") %>"
-           required autocomplete="current-password"
-           class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
-           data-bs-toggle="tooltip"
-           title="Any non-empty password is accepted - one character is enough.">
-    <button type="button" class="auth-field-action" data-toggle-password="<%= getUniqIdValue("login-password") %>"
-            aria-label="Show the password" data-bs-toggle="tooltip" title="Show the password">
-      <i class="bi bi-eye" aria-hidden="true"></i>
-    </button>
+    <div class="auth-field-control">
+      <i class="bi bi-key auth-field-icon" aria-hidden="true"></i>
+      <input type="password" name="password" id="<%= getUniqIdValue("login-password") %>"
+             required autocomplete="current-password"
+             class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
+             data-bs-toggle="tooltip"
+             title="Any non-empty password is accepted - one character is enough.">
+      <button type="button" class="auth-field-action" data-toggle-password="<%= getUniqIdValue("login-password") %>"
+              aria-label="Show the password" data-bs-toggle="tooltip" title="Show the password">
+        <i class="bi bi-eye" aria-hidden="true"></i>
+      </button>
+    </div>
   </div>
 
   <div class="auth-options">

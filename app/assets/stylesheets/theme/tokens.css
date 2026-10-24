@@ -57,6 +57,16 @@
   --theme-slate-800: #232a35;
   --theme-slate-900: #141922;
 
+  /* NOTE: the height of the navigation header - the sticky elements of the
+     page (the header of the table) have to stay below it. The value is
+     measured by the javascript (script/app.js) and written into the variable,
+     therefore it is always correct. */
+  --theme-navbar-height: 4rem;
+
+  /* NOTE: the height of the toolbar of the table - the sticky header of the
+     table has to stay below it. */
+  --theme-toolbar-height: 3.6rem;
+
   /* the surfaces */
   --theme-bg: var(--theme-slate-50);
   --theme-surface: #ffffff;
@@ -66,8 +76,13 @@
 
   /* the text */
   --theme-text: var(--theme-slate-900);
-  --theme-text-muted: var(--theme-slate-500);
-  --theme-text-subtle: var(--theme-slate-400);
+  /* NOTE: the muted text is the SECONDARY text of the interface. IMPORTANT:
+     the contrast against the white surface is 7.4:1 (WCAG AA asks for 4.5:1
+     for a normal text). */
+  --theme-text-muted: var(--theme-slate-600);
+  /* NOTE: the subtle text is used for the hints and the icons - it is still
+     readable (4.7:1), it is only quieter than the muted text. */
+  --theme-text-subtle: var(--theme-slate-500);
   --theme-text-inverse: #ffffff;
 
   /* ---------------------------------------------------------------------------

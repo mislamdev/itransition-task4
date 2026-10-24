@@ -176,7 +176,8 @@
 }
 
 .form-control::placeholder {
-  color: var(--theme-text-subtle);
+  color: var(--theme-text-muted);
+  opacity: 1;
 }
 
 .form-control:focus,

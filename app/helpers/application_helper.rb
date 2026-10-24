@@ -114,27 +114,46 @@ module ApplicationHelper
   # Small helper: the link that sorts the table by a column.
   # NOTE: the direction is toggled when the column is already sorted.
   def sort_link(column, label)
-    next_direction = (@sort_column == column && @sort_direction == "asc") ? "desc" : "asc"
-    active = @sort_column == column
+    # IMPORTANT: the column of the view is a symbol, the sorted column of the
+    # controller is a string - they have to be compared as strings, otherwise
+    # the active column is never marked.
+    column = column.to_s
+    next_direction = (sorted_column == column && @sort_direction == "asc") ? "desc" : "asc"
+    active = sorted_column == column
 
     link_to(
       url_for(sort: column, direction: next_direction, status: @status_filter, q: @query.presence),
       class: "table-sort-link #{'is-active' if active}",
-      title: active ? "Sorted by #{label} (#{@sort_direction == 'asc' ? 'ascending' : 'descending'})" : "Sort by #{label}",
-      "aria-label": "Sort by #{label}"
+      title: active ? "Sorted by #{label} (#{@sort_direction == 'asc' ? 'ascending' : 'descending'}) - click for the other direction" : "Sort by #{label}",
+      "aria-label": active ? "Sorted by #{label}, #{@sort_direction == 'asc' ? 'ascending' : 'descending'}. Click to sort the other way." : "Sort by #{label}"
     ) do
       safe_join([
         label,
-        tag.i(class: "bi bi-chevron-expand sort-icon")
+        tag.i(class: "bi #{sort_icon_for(column)} sort-icon")
       ])
     end
   end
 
-  # Small helper: the icon that shows the sort direction.
-  def sort_icon(column)
-    return "" unless @sort_column == column
+  # Small helper: the column the table is sorted by (as a string).
+  def sorted_column
+    @sort_column.to_s
+  end
+
+  # Small helper: the icon of the sort link.
+  # IMPORTANT: the sorted column shows the direction of the order, the other
+  # columns a neutral icon - the direction has to be visible at a glance.
+  def sort_icon_for(column)
+    return "bi-chevron-expand" unless sorted_column == column.to_s
 
     @sort_direction == "asc" ? "bi-chevron-up" : "bi-chevron-down"
+  end
+
+  # Small helper: the value of the attribute `aria-sort` of a column header.
+  # NOTE: the screen readers announce the direction of the order.
+  def aria_sort_for(column)
+    return "none" unless sorted_column == column.to_s
+
+    @sort_direction == "asc" ? "ascending" : "descending"
   end
 
   # Small helper: the flash messages of the request.

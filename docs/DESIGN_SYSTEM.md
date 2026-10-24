@@ -107,6 +107,7 @@ The reusable parts of the interface:
 | `.checkbox-column`, `.table-sort-link`, `.cell-strong`, `.cell-sub` | the columns of the table |
 | `.status`, `.status-dot`, `.is-blocked` | the status of an account and the dimmed row of a blocked account |
 | `.activity-cell`, `.cell-line`, `.sparkline`, `.spark-bar` | the last activity with the small bar chart of the history |
+| `.auth-field-control` | the wrapper of an input with its icons - IMPORTANT: the icons are centred in it, not in the whole field |
 | `.assistant-card`, `.assistant-input`, `.assistant-answer`, `.assistant-plan` | the assistant |
 | `.auth-shell`, `.auth-panel`, `.auth-art`, `.auth-field`, `.auth-submit` | the split screen of the sign in and the registration |
 | `.filter-card`, `.empty-state`, `.app-footer` | the rest of the pages |
@@ -136,7 +137,25 @@ table.
 
 ---
 
-## 5. The rules of the project
+## 5. The audit of the user interface (the checklist)
+
+The result of the review with the checklist of the ui-ux-pro-max skill:
+
+| Check | Result |
+|---|---|
+| No emojis as icons | only Bootstrap Icons (one consistent set) and inline SVG for the brand |
+| cursor-pointer on the clickable elements | the rows of the table, the buttons and the links |
+| Hover states without a layout shift | only colours and borders change - never a scale |
+| Contrast in the light theme | the muted text is `--theme-slate-600` (7.4:1), the subtle text `--theme-slate-500` (4.7:1) |
+| Contrast in the dark theme | the same tokens, dark surfaces - the messages use their own text tokens |
+| Focus states visible | every custom control has a `:focus-visible` ring (`--theme-shadow-focus`) |
+| `prefers-reduced-motion` | every animation is switched off (and the rule is written down explicitly) |
+| Responsive 375 / 768 / 1024 / 1440 | `script/responsive_check.rb` opens all four resolutions and proves that the page never scrolls sideways |
+| Labels for the inputs | every input has a visible label - a placeholder is never the only label |
+| The colour is not the only indicator | the status is a dot **and** a text, the blocked rows are struck through |
+| Table on a small screen | the table scrolls inside its own container, the page does not |
+
+## 6. The rules of the project
 
 1. **No hard coded colours** in the components — only tokens.
 2. **No animation.** `application.css` switches off every transition and every
@@ -151,7 +170,7 @@ table.
 
 ---
 
-## 6. How a new component is added
+## 7. How a new component is added
 
 1. Add the tokens that it needs to `theme/tokens.css` (only if they do not
    exist yet).

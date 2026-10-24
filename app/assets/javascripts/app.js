@@ -291,7 +291,30 @@
     });
   }
 
+  // ===========================================================================
+  // The measurements of the page.
+  //
+  // IMPORTANT: the height of the navigation header and of the toolbar of the
+  // table are needed for the sticky elements of the table - they have to stay
+  // exactly below each other. The values are written into the CSS variables of
+  // the document, therefore they are always correct - also on a small screen,
+  // where the navigation header is higher.
+  // ===========================================================================
+  function measureLayout() {
+    var navbar = document.querySelector(".app-navbar");
+    var toolbar = document.querySelector(".table-card .card-header");
+
+    if (navbar) {
+      document.documentElement.style.setProperty("--theme-navbar-height", navbar.offsetHeight + "px");
+    }
+
+    if (toolbar) {
+      document.documentElement.style.setProperty("--theme-toolbar-height", toolbar.offsetHeight + "px");
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    measureLayout();
     initTooltips();
     initSelection();
     initAssistant();
