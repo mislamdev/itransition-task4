@@ -21,6 +21,9 @@
   </head>
 
   <body>
+    <%# NOTE: the status messages float in the top right corner. %>
+    <%= render "shared/flash" %>
+
     <div class="auth-shell">
       <%# ------------------------------------------------------------------- %>
       <%# THE FORM - the left half of the screen. %>
@@ -33,7 +36,6 @@
 
         <div class="auth-panel-inner">
           <div class="auth-body">
-            <%= render "shared/flash" %>
             <%= yield %>
           </div>
         </div>

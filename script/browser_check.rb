@@ -168,6 +168,29 @@ begin
   end
   driver.save_screenshot(File.join(OUTPUT, "09_assistant_in_browser.png"))
 
+  # ----- the status message (the toast) --------------------------------------
+  # NOTE: the message of the block action - it has to float in the top right
+  # corner and it has to close itself.
+  toast = driver.find_elements(css: ".app-toast")
+  check("the status message is a toast") { toast.any? }
+
+  if toast.any?
+    # NOTE: the position of the toast - it floats in the top right corner.
+    position = driver.execute_script(
+      "var box = arguments[0].getBoundingClientRect();" \
+      "return { x: box.x, y: box.y, width: box.width, right: box.right };",
+      toast.first
+    )
+    check("the toast is in the top right corner") do
+      position["right"] >= 1440 - 20 && position["y"] < 200
+    end
+    check("the toast closes itself") do
+      disappeared = wait_until(15) { driver.find_elements(css: ".app-toast").empty? }
+      disappeared
+    end
+  end
+  driver.save_screenshot(File.join(OUTPUT, "11_toast_gone.png"))
+
   # ----- the live filter (the table is filtered WHILE typing) --------------
   before = driver.find_elements(css: "#users-table tbody tr[data-user-id]").size
   filter = driver.find_element(css: '.toolbar-search input[name="q"]')
@@ -177,8 +200,14 @@ begin
   # NOTE: the table is replaced by the answer of the server - the test waits
   # for the new table.
   filtered = wait_until do
-    rows = driver.find_elements(css: "#users-table tbody tr[data-user-id]")
-    rows.any? && rows.first.find_element(css: "td:nth-child(2)").text.include?("Shafi")
+    begin
+      rows = driver.find_elements(css: "#users-table tbody tr[data-user-id]")
+      rows.any? && rows.first.find_element(css: "td:nth-child(2)").text.include?("Shafi")
+    rescue Selenium::WebDriver::Error::StaleElementReferenceError
+      # NOTE: the table is replaced while the test reads it - the next round
+      # reads the new table.
+      false
+    end
   end
 
   after = driver.find_elements(css: "#users-table tbody tr[data-user-id]").size

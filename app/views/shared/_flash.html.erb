@@ -1,15 +1,24 @@
 <%# NOTE: the status messages of the application.
     IMPORTANT: they are rendered as Bootstrap alerts inside the page - the
-    application never uses a browser alert(). %>
-<% flash.each do |level, message| %>
-  <% next if message.blank? %>
-  <div class="app-flash">
-    <div class="alert <%= flash_class(level) %> alert-dismissible show d-flex align-items-start gap-3"
-         role="alert" id="<%= getUniqIdValue("flash-#{level}") %>">
-      <i class="bi <%= level.to_s == 'alert' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill' %> mt-1"
+    application never uses a browser alert().
+
+    The messages float in the top right corner (they do not push the content
+    of the page down) and they close themselves after a few seconds - the
+    javascript of the application counts the time down.
+
+    NOTA BENE: the duration depends on the kind of the message - a success
+    disappears faster than an error. %>
+<div class="toast-stack" id="flash-stack" aria-live="polite" aria-atomic="false">
+  <% flash.each do |level, message| %>
+    <% next if message.blank? %>
+    <% duration = level.to_s == "alert" ? 10_000 : 6_000 %>
+    <div class="app-toast alert <%= flash_class(level) %> alert-dismissible fade show"
+         role="alert" id="<%= getUniqIdValue("flash-#{level}") %>"
+         data-autohide="<%= duration %>">
+      <i class="bi <%= level.to_s == 'alert' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill' %>"
          aria-hidden="true"></i>
       <div class="flex-grow-1"><%= message %></div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close the message"></button>
     </div>
-  </div>
-<% end %>
+  <% end %>
+</div>

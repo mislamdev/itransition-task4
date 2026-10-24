@@ -11,7 +11,7 @@ about the data and **controls the dashboard**.
 | CSS framework | Bootstrap 5.3.3 + Bootstrap Icons 1.11.3 (served from the app itself) |
 | Passwords | `has_secure_password` + bcrypt |
 | Server | Puma, published over a Cloudflare TLS tunnel |
-| Tests | 78 Minitest tests (270 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar and of the live filter (19 checks), a responsive check of the four resolutions |
+| Tests | 80 Minitest tests (276 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar, of the live filter and of the toasts (22 checks), a responsive check of the four resolutions |
 
 ---
 

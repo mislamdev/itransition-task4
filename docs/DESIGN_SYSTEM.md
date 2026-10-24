@@ -111,6 +111,7 @@ The reusable parts of the interface:
 | `.assistant-card`, `.assistant-input`, `.assistant-answer`, `.assistant-plan` | the assistant |
 | `.auth-shell`, `.auth-panel`, `.auth-art`, `.auth-field`, `.auth-submit` | the split screen of the sign in and the registration |
 | `.filter-card`, `.empty-state`, `.app-footer` | the rest of the pages |
+| `.toast-stack`, `.app-toast` | the status messages - they float in the top right corner and close themselves |
 
 ---
 

@@ -25,6 +25,9 @@
   </head>
 
   <body class="d-flex flex-column min-vh-100">
+    <%# NOTE: the status messages float in the top right corner. %>
+    <%= render "shared/flash" %>
+
     <%# NOTE: the standard navigation header of the application. %>
     <nav class="navbar navbar-expand-lg app-navbar sticky-top">
       <div class="container-fluid">
@@ -92,7 +95,6 @@
     </nav>
 
     <main class="flex-grow-1">
-      <%= render "shared/flash" %>
       <%= yield %>
     </main>
 

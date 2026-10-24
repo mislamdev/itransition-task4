@@ -413,6 +413,30 @@
     }
   }
 
+  // ===========================================================================
+  // THE STATUS MESSAGES (the toasts).
+  //
+  // IMPORTANT: they close themselves after a few seconds - the duration is in
+  // the attribute `data-autohide` of the message (a success disappears faster
+  // than an error). The message can also be closed with the cross.
+  // ===========================================================================
+  function initToasts() {
+    document.querySelectorAll(".app-toast[data-autohide]").forEach(function (toast) {
+      var timeout = parseInt(toast.getAttribute("data-autohide"), 10);
+      if (!timeout) return;
+
+      window.setTimeout(function () {
+        if (typeof bootstrap === "undefined") {
+          toast.remove();
+          return;
+        }
+
+        var instance = bootstrap.Alert.getOrCreateInstance(toast);
+        instance.close();
+      }, timeout);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     measureLayout();
     initTooltips();
@@ -420,5 +444,6 @@
     initAssistant();
     initPasswordToggles();
     initLiveFilter();
+    initToasts();
   });
 })();

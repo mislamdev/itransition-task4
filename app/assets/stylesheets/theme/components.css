@@ -928,6 +928,64 @@
 }
 
 /* -----------------------------------------------------------------------------
+   THE STATUS MESSAGES (the toasts)
+   -----------------------------------------------------------------------------
+   IMPORTANT: they float in the top right corner - the content of the page is
+   NOT pushed down when a message appears (no layout shift).
+   -------------------------------------------------------------------------- */
+.toast-stack {
+  position: fixed;
+  top: calc(var(--theme-navbar-height) + 0.75rem);
+  right: 1rem;
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  gap: var(--theme-space-2);
+  width: min(26rem, calc(100vw - 2rem));
+  /* NOTE: the stack itself does not catch the clicks - only the messages do. */
+  pointer-events: none;
+}
+
+.app-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0;
+  box-shadow: var(--theme-shadow-lg);
+  border: 1px solid var(--theme-border);
+}
+
+.app-toast .btn-close {
+  flex: 0 0 auto;
+}
+
+/* NOTE: the message comes from the right and disappears to the right.
+   IMPORTANT: the animation of the framework is switched off (see
+   application.css) - the messages are the one exception, because the user
+   has to SEE that something happened. The motion is skipped when the
+   operating system asks for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .app-toast.fade {
+    animation: toast-in 0.28s ease-out !important;
+  }
+
+  .app-toast.fade:not(.show) {
+    animation: toast-out 0.2s ease-in forwards !important;
+  }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(1.5rem); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(1.5rem); }
+}
+
+/* -----------------------------------------------------------------------------
    THE SMALL PARTS
    -------------------------------------------------------------------------- */
 .filter-card .card-body {

@@ -107,6 +107,29 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
+  # NOTE: the status messages float in the top right corner and close
+  # themselves after a few seconds.
+  test "the status messages are toasts with a duration" do
+    user = create_user
+    sign_in(user)
+
+    get users_path
+
+    assert_select "div#flash-stack" do
+      assert_select ".app-toast", 1
+      assert_select ".app-toast[data-autohide]", 1
+    end
+  end
+
+  test "an error message lives longer than a success message" do
+    user = create_user(email: "blocked@example.com", blocked: true)
+
+    post login_path, params: { email: user.email, password: "a", authenticity_token: csrf_token }
+
+    assert_response :unprocessable_entity
+    assert_select ".app-toast[data-autohide=?]", "10000", 1
+  end
+
   test "a user can sign out" do
     user = create_user
     sign_in(user)
