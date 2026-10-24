@@ -48,6 +48,19 @@ bin/serve            # production server on 127.0.0.1:3100 (database, seeds, ass
 bin/tunnel           # public HTTPS URL - it is printed when the tunnel is up
 ```
 
+> **IMPORTANT:** the secret key of the production environment is **not** in the
+> repository - the repository is public, and a published key can be used to
+> forge the cookies of the session. The key lives in `.env.production` (ignored
+> by git) and `bin/serve` reads it:
+>
+> ```bash
+> echo "SECRET_KEY_BASE=$(openssl rand -hex 64)" > .env.production
+> ```
+>
+> Without it the application still starts in development and in the test
+> environment (they generate their own key), but the production environment
+> needs it.
+
 Both processes are also startable in the background:
 
 ```bash
