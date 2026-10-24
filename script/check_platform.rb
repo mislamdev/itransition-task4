@@ -39,9 +39,12 @@ check(results, "the secret comes from SECRET_KEY_BASE") do
   File.read("/tmp/secret_len.txt").to_i == SECRET.length
 end
 
+# NOTE: the important one - the url of the platform has to win over the
+# discrete variables, otherwise the application connects to the local database.
 check(results, "the database comes from DATABASE_URL") do
-  system("bundle exec rails runner -e production 'puts ActiveRecord::Base.connection_db_config.configuration_hash[:host]' > /tmp/db_host.txt 2>/dev/null")
-  !File.read("/tmp/db_host.txt").strip.empty?
+  system("bundle exec rails runner -e production 'puts ActiveRecord::Base.connection_db_config.configuration_hash[:database]' > /tmp/db_name.txt 2>/dev/null")
+  expected = ENV.fetch("EXPECTED_DATABASE", "")
+  !expected.empty? && File.read("/tmp/db_name.txt").strip == expected
 end
 
 check(results, "the health endpoint answers") do

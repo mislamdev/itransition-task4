@@ -46,6 +46,14 @@ services:
       - key: SECRET_KEY_BASE
         generateValue: true
 
+      # NOTE: the connection string of the database below. IMPORTANT: it is
+      # declared explicitly, so that it cannot be missed - without it the
+      # application would try to connect to the local database.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: user-management-db
+          property: connectionString
+
       # NOTE: the proxy of Render terminates the TLS and sends the header
       # `X-Forwarded-Proto: https` - the application has to know that.
       - key: ASSUME_SSL

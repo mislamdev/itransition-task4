@@ -125,6 +125,11 @@ What the blueprint sets up:
 * `config/database.yml` uses **`DATABASE_URL`** when it is set (Render, Heroku,
   Fly.io build it from their own database instance); the discrete variables
   are still used for the local installation.
+  IMPORTANT: the two are in **separate branches** of the configuration. When
+  the discrete variables are merged into the same block they **override** the
+  values of the url, and the application connects to `127.0.0.1:5432` instead
+  of the database of the platform ("connection to server at 127.0.0.1, port 5432
+  failed"). The blueprint therefore declares `DATABASE_URL` explicitly.
 * `config/environments/production.rb` reads **`ASSUME_SSL`** and
   **`FORCE_SSL`** from the environment (the tunnel on this machine needs
   neither, Render needs `ASSUME_SSL`).
