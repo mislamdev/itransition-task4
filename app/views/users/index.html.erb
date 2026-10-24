@@ -209,10 +209,10 @@
                            title="Select <%= user.email %>">
                   </td>
 
-                  <%# NOTE: the name and the position below it. %>
+                  <%# NOTE: the name and the designation below it. %>
                   <td>
                     <span class="cell-strong"><%= user.name %></span>
-                    <span class="cell-sub"><%= user.position.presence || "—" %></span>
+                    <span class="cell-sub"><%= designation(user) %></span>
                   </td>
 
                   <td class="text-nowrap"><%= user.email %></td>
@@ -225,9 +225,17 @@
                       title="<%= exact_time(user.last_login_at) %>">
                     <%= relative_time(user.last_login_at) %>
                   </td>
-                  <td class="text-nowrap" data-bs-toggle="tooltip"
-                      title="<%= exact_time(user.last_activity_at) %>">
-                    <%= relative_time(user.last_activity_at) %>
+                  <%# NOTE: the relative time and the small bar chart with the %>
+                  <%# activity of the last days - the chart has the height of %>
+                  <%# one line, exactly like the designation under the name. %>
+                  <td class="activity-cell">
+                    <span class="cell-line" data-bs-toggle="tooltip"
+                          title="<%= exact_time(user.last_activity_at) %>">
+                      <%= relative_time(user.last_activity_at) %>
+                    </span>
+                    <span class="cell-line">
+                      <%= activity_sparkline(@activity_counts[user.id]) %>
+                    </span>
                   </td>
                 </tr>
               <% end %>

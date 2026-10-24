@@ -76,6 +76,32 @@ module ApplicationHelper
     "#{number} #{number == 1 ? word : "#{word}s"}"
   end
 
+  # Small helper: the small bar chart with the activity of an account.
+  #
+  # IMPORTANT: the counts come from the activity history (ActivityHistory) and
+  # NOT from the model - the chart is the history of the account.
+  def activity_sparkline(counts, user: nil)
+    counts = Array(counts)
+    total = counts.sum
+    highest = counts.max.to_i
+
+    bars = counts.map do |count|
+      # NOTE: the height of a bar is the share of the biggest bar.
+      height = highest.zero? ? 0 : [(count.to_f / highest) * 100, 8].max
+      content_tag(:span, "", class: "spark-bar #{'is-empty' if count.to_i.zero?}",
+                               style: "height: #{count.to_i.zero? ? 0 : height}%")
+    end
+
+    content_tag(:span, safe_join(bars), class: "sparkline",
+                                            data: { bs_toggle: "tooltip" },
+                                            title: "#{total} #{total == 1 ? 'activity' : 'activities'} in the last #{ActivityHistory::DAYS} days")
+  end
+
+  # Small helper: the designation of an account - "N/A" when there is none.
+  def designation(user)
+    user.position.presence || "N/A"
+  end
+
   # Small helper: a readable date/time or a dash when there is no timestamp.
   # IMPORTANT: the timestamps are always shown in the same format, so that the
   # table stays aligned and comparable.

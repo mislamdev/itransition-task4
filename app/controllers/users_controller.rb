@@ -32,6 +32,10 @@ class UsersController < ApplicationController
     # The default order is "last login time, the most recent first".
     @users = scope.order(order_clause).to_a
 
+    # NOTE: the activity of the accounts - it is the source of the small bar
+    # chart under the "last activity" column. ONE query for the whole table.
+    @activity_counts = ActivityHistory.for_users(@users)
+
     # NOTE: the ids of the rows that are currently selected in the browser.
     # They are used to enable / disable the toolbar buttons.
     @selected_ids = Array(params[:selected_ids]).filter_map { |id| Integer(id, exception: false) }

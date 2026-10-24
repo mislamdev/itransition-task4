@@ -48,17 +48,32 @@
             </ul>
 
             <ul class="navbar-nav align-items-lg-center gap-2">
-              <li class="nav-item">
-                <span class="account-chip" title="You are signed in with this account">
+              <%# NOTE: the profile of the signed in account - the sign out %>
+              <%# button is inside the dropdown menu of the profile. %>
+              <li class="nav-item dropdown">
+                <button class="account-chip dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"
+                        aria-label="The account of the signed in user">
                   <span class="account-avatar" aria-hidden="true"><%= current_user.name.to_s.first.to_s.upcase %></span>
                   <span class="account-email"><%= current_user.email %></span>
-                </span>
-              </li>
-              <li class="nav-item">
-                <%# NOTE: the sign out button is a form button - no javascript needed. %>
-                <%= button_to "Sign out", logout_path, method: :delete,
-                              class: "btn btn-light btn-sm",
-                              form: { class: "d-inline" } %>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <span class="dropdown-item-text">
+                      <strong><%= current_user.name %></strong><br>
+                      <small class="text-body-secondary"><%= current_user.email %></small>
+                    </span>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <%# NOTE: the sign out is a form button - the CSRF token %>
+                    <%# of the session is sent with it. %>
+                    <%= button_to "Sign out", logout_path, method: :delete,
+                                  class: "dropdown-item dropdown-item-danger",
+                                  form: { class: "dropdown-form" } %>
+                  </li>
+                </ul>
               </li>
             </ul>
           <% else %>

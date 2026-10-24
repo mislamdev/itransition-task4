@@ -122,6 +122,19 @@
   border-radius: var(--theme-radius-pill);
   background-color: var(--theme-surface);
   box-shadow: var(--theme-shadow-xs);
+  color: var(--theme-text);
+}
+
+.account-chip:hover,
+.account-chip:focus,
+.account-chip.show {
+  border-color: var(--theme-primary);
+  background-color: var(--theme-primary-softer);
+}
+
+.account-chip.dropdown-toggle::after {
+  margin-left: 0.25rem;
+  border-top-color: var(--theme-text-subtle);
 }
 
 .account-avatar {
@@ -141,6 +154,41 @@
   font-size: var(--theme-font-size-sm);
   font-weight: 600;
   color: var(--theme-slate-600);
+}
+
+/* the dropdown of the profile */
+.dropdown-menu {
+  min-width: 15rem;
+  padding: var(--theme-space-2);
+}
+
+.dropdown-item-text {
+  padding: var(--theme-space-2) var(--theme-space-3);
+  line-height: 1.35;
+}
+
+/* NOTE: the sign out is a form button inside the dropdown - it has to look
+   like a dropdown item. */
+.dropdown-form {
+  margin: 0;
+}
+
+.dropdown-form .dropdown-item {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  font-size: var(--theme-font-size-base);
+}
+
+.dropdown-item-danger {
+  color: var(--theme-danger);
+}
+
+.dropdown-item-danger:hover,
+.dropdown-item-danger:focus {
+  background-color: var(--theme-danger-soft);
+  color: var(--theme-danger-strong);
 }
 
 /* -----------------------------------------------------------------------------
@@ -279,12 +327,52 @@
   font-weight: 600;
 }
 
-/* the second line of the name cell (the position of the account) */
+/* the second line of the name cell (the designation of the account) */
 .cell-sub {
   display: block;
   font-size: var(--theme-font-size-sm);
   color: var(--theme-text-subtle);
   line-height: 1.35;
+}
+
+/* NOTE: a cell with two lines - the second line is the small bar chart with
+   the activity. IMPORTANT: the height of the two lines is the same as the
+   height of the name and its designation, therefore the rows do not grow. */
+.activity-cell {
+  white-space: nowrap;
+}
+
+.cell-line {
+  display: block;
+  line-height: 1.35;
+}
+
+.cell-line + .cell-line {
+  margin-top: 1px;
+}
+
+/* the small bar chart with the activity of the last days */
+.sparkline {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 15px;
+  vertical-align: bottom;
+}
+
+.spark-bar {
+  width: 4px;
+  min-height: 2px;
+  border-radius: 1px;
+  background-color: var(--theme-primary);
+  opacity: 0.8;
+}
+
+.spark-bar.is-empty {
+  min-height: 2px;
+  height: 2px !important;
+  background-color: var(--theme-border);
+  opacity: 1;
 }
 
 /* the status of an account - a text with a small coloured dot */

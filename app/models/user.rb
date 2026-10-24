@@ -11,6 +11,11 @@ class User < ApplicationRecord
   # password is not stored anywhere, only `password_digest` is.
   has_secure_password
 
+  # NOTE: the history of the activity of the account - it is the source of the
+  # small bar chart under the "last activity" column. IMPORTANT: the history
+  # belongs to the account, therefore it is deleted together with it.
+  has_many :user_activities, dependent: :delete_all
+
   # IMPORTANT: the e-mail is the business key of a user, so it is normalised
   # (trimmed + down-cased) before every validation. That makes the plain unique
   # index on `email` behave case-insensitively.

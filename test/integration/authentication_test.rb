@@ -118,6 +118,18 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_select ".alert-success", text: /signed out/i
   end
 
+  # NOTE: the sign out button lives inside the dropdown of the profile.
+  test "the sign out button is inside the dropdown of the profile" do
+    user = create_user
+    sign_in(user)
+
+    get users_path
+
+    assert_select ".account-chip.dropdown-toggle", 1
+    assert_select ".dropdown-menu .dropdown-item-danger", 1
+    assert_select ".dropdown-menu form.dropdown-form button", 1
+  end
+
   # NOTE: the "remember me" checkbox of the sign in form - the session of a
   # remembered account survives the restart of the browser.
   test "the session of a remembered account expires in 30 days" do

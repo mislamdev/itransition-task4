@@ -28,10 +28,12 @@ class UserBulkAction
       count = User.where(id: ids).update_all(blocked: false, updated_at: Time.current)
       { "operation" => operation, "count" => count, "ids" => ids }
     when "delete"
-      # IMPORTANT: destroy_all removes the rows physically.
+      # IMPORTANT: destroy_all removes the rows physically - it is NOT a soft
+      # delete (the task asks for a real deletion). The history of the activity
+      # belongs to the account and is deleted with it.
       target = User.where(id: ids)
       count = target.count
-      target.delete_all # NOTE: no callbacks, no dependent records - a hard delete.
+      target.destroy_all
       { "operation" => operation, "count" => count, "ids" => ids }
     end
   end

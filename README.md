@@ -11,7 +11,7 @@ about the data and **controls the dashboard**.
 | CSS framework | Bootstrap 5.3.3 + Bootstrap Icons 1.11.3 (served from the app itself) |
 | Passwords | `has_secure_password` + bcrypt |
 | Server | Puma, published over a Cloudflare TLS tunnel |
-| Tests | 63 Minitest tests (222 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar (13 checks) |
+| Tests | 71 Minitest tests (250 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar (14 checks) |
 
 ---
 
@@ -138,12 +138,13 @@ and the registration form turns that database error into a friendly message
 * The table is a real HTML table (`<table class="table table-hover align-middle">`)
   with a header row, a body, aligned columns, `text-nowrap` for the
   timestamps and a centred checkbox column. The columns are: **checkbox, name
-  (with the position below it), e-mail, status, last login, last activity** —
+  (with the designation below it), e-mail, status, last login, last activity** —
   the design follows the table example of the task
   (`docs/reference/table-example.png`): the status is a text with a small dot,
-  a blocked account is dimmed and its name is struck through, and the
-  timestamps are relative times ("4 hours ago") with the exact time in the
-  tooltip.
+  a blocked account is dimmed and its name is struck through, the timestamps
+  are relative times ("4 hours ago") with the exact time in the tooltip, and
+  under the last activity there is the small **bar chart with the activity of
+  the last 14 days** (`user_activities`, one query for the whole table).
 * The **toolbar is a card header above the table** and it never disappears —
   only the state of its buttons changes (`disabled` when the selection does not
   allow the action):
@@ -350,7 +351,7 @@ the page, and the plan plus the API calls can be opened below the answer
 ## 6. The tests
 
 ```bash
-bin/rails test          # 63 tests, 222 assertions
+bin/rails test          # 71 tests, 250 assertions
 ```
 
 > The **CSRF protection is enabled in the test environment** — the tests send
@@ -364,6 +365,7 @@ bin/rails test          # 63 tests, 222 assertions
 | File | What it proves |
 |---|---|
 | `test/models/user_test.rb` | e-mail normalisation, the unique index (even against raw SQL), a one character password |
+| `test/models/user_activity_test.rb` | the history of the activity: the recording, the throttle and the counters of the chart |
 | `test/integration/authentication_test.rb` | registration, login, blocked / deleted users are sent back to the login page, a deleted user can register again |
 | `test/integration/users_admin_test.rb` | the table, the toolbar, the sorting, the selection, **no button in a row**, block / unblock / delete, self block / self delete |
 | `test/integration/api_test.rb` | the JSON API, the filters, the counters, the service token |

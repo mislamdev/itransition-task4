@@ -148,8 +148,29 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
     assert(cells.all? { |cell| cell.text.match?(/ago|never/) })
   end
 
-  test "the filter of the table works" do
-    get users_path, params: { q: "alice" }
+  # NOTE: the activity of an account is shown as a small bar chart under the
+  # "last activity" column - one bar per day.
+  test "the activity is shown as a small bar chart" do
+    get users_path
+
+    assert_select "table#users-table tbody tr[data-user-id=?]", @alice.id do
+      assert_select ".activity-cell .sparkline .spark-bar", ActivityHistory::DAYS
+    end
+  end
+
+  # NOTE: the designation below the name is "N/A" when the account has none.
+  test "the designation of an account without a position shows N/A" do
+    user = create_user(name: "Without Position")
+    user.update_column(:position, nil)
+
+    get users_path
+
+    assert_select "table#users-table tbody tr[data-user-id=?]", user.id do
+      assert_select ".cell-sub", text: "N/A"
+    end
+  end
+
+  test "the filter of the table works" do    get users_path, params: { q: "alice" }
 
     assert_select "table#users-table tbody tr[data-user-id]", 1
     assert_select "table#users-table tbody tr[data-user-id=?]", @alice.id

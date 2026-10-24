@@ -106,3 +106,31 @@ end
 
 puts "#{User.count} users in the database."
 puts "Sign in with any of the e-mail addresses above and the password '#{DEMO_PASSWORD}'."
+
+# ---------------------------------------------------------------------------
+# The history of the activity of the demo accounts.
+#
+# IMPORTANT: the small bar chart under the "last activity" column is built
+# out of these rows. In the running application the history is written by the
+# application itself (UserActivity.record) - the seeds only fill it, so that
+# the demo accounts are not empty.
+# ---------------------------------------------------------------------------
+UserActivity.delete_all
+
+rows = []
+User.find_each do |user|
+  # NOTE: the same account always gets the same history (the seed does not
+  # depend on the order of the rows or on the time of the run).
+  random = Random.new(Digest::MD5.hexdigest(user.email).to_i(16))
+  random.rand(0..45).times do
+    rows << {
+      user_id: user.id,
+      occurred_at: random.rand(0...(14 * 24 * 60)).minutes.ago,
+      created_at: Time.current,
+      updated_at: Time.current
+    }
+  end
+end
+
+UserActivity.insert_all!(rows) if rows.any?
+puts "#{UserActivity.count} activity entries in the history."

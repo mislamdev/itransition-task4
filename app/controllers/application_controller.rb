@@ -93,6 +93,10 @@ class ApplicationController < ActionController::Base
     # NOTE: update_columns is used on purpose: no validations, no callbacks and
     # therefore no risk of raising an exception in the middle of a request.
     user.update_columns(last_activity_at: Time.current, updated_at: Time.current)
+
+    # NOTE: the activity is also written into the history - it is the source of
+    # the small bar chart under the "last activity" column.
+    UserActivity.record(user)
   end
 
   # Small function: the title shown in the browser tab and in the navigation bar.
