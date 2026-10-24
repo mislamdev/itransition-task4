@@ -1,83 +1,93 @@
-<%# NOTE: the registration form.
-    IMPORTANT: the account is created immediately - there is no approval step. %>
-<div class="row justify-content-center">
-  <div class="col-12 col-sm-9 col-md-7 col-lg-5">
-    <div class="card shadow-sm">
-      <div class="card-header bg-body-tertiary">
-        <h1 class="h5 mb-0"><i class="bi bi-person-plus me-2" aria-hidden="true"></i>Register</h1>
-      </div>
+<%# NOTE: the registration form - the same design as the sign in form. %>
+<p class="auth-eyebrow">Create an account</p>
+<h1 class="auth-title">Register to User Management</h1>
+<p class="auth-lead">
+  The account is created right away - there is no approval step and no waiting time.
+</p>
 
-      <div class="card-body">
-        <%# NOTE: the error summary of the form. %>
-        <% if @user.errors.any? %>
-          <div class="alert alert-danger" role="alert">
-            <p class="mb-2"><strong><%= pluralize(@user.errors.count, "error") %> prevented the registration:</strong></p>
-            <ul class="mb-0 ps-3">
-              <% @user.errors.full_messages.each do |message| %>
-                <li><%= message %></li>
-              <% end %>
-            </ul>
-          </div>
+<%# NOTE: the error summary of the form. %>
+<% if @user.errors.any? %>
+  <div class="alert alert-danger d-flex align-items-start gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill mt-1" aria-hidden="true"></i>
+    <div>
+      <strong><%= pluralize(@user.errors.count, "error") %> prevented the registration:</strong>
+      <ul class="mb-0 ps-3 mt-1">
+        <% @user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
         <% end %>
-
-        <%= form_with model: @user, url: signup_path, method: :post, local: true, id: "registration-form" do |f| %>
-          <div class="mb-3">
-            <%= f.label :name, "Name", class: "form-label", for: getUniqIdValue("user-name") %>
-            <%# IMPORTANT: the id of the input comes from getUniqIdValue, the
-                label points to exactly that id. %>
-            <input type="text" name="user[name]" id="<%= getUniqIdValue("user-name") %>"
-                   value="<%= @user.name %>" required maxlength="120" autocomplete="name"
-                   class="form-control <%= 'is-invalid' if @user.errors[:name].any? %>"
-                   data-bs-toggle="tooltip" title="The name that is shown in the user table.">
-            <% if @user.errors[:name].any? %>
-              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:name).to_sentence %></div>
-            <% end %>
-          </div>
-
-          <div class="mb-3">
-            <%= f.label :email, "E-mail", class: "form-label", for: getUniqIdValue("user-email") %>
-            <input type="email" name="user[email]" id="<%= getUniqIdValue("user-email") %>"
-                   value="<%= @user.email %>" required autocomplete="username"
-                   class="form-control <%= 'is-invalid' if @user.errors[:email].any? %>"
-                   data-bs-toggle="tooltip"
-                   title="The e-mail must be unique - a UNIQUE INDEX in the database guarantees it.">
-            <% if @user.errors[:email].any? %>
-              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:email).to_sentence %></div>
-            <% end %>
-          </div>
-
-          <div class="mb-3">
-            <%= f.label :password, "Password", class: "form-label", for: getUniqIdValue("user-password") %>
-            <input type="password" name="user[password]" id="<%= getUniqIdValue("user-password") %>"
-                   required autocomplete="new-password"
-                   class="form-control <%= 'is-invalid' if @user.errors[:password].any? %>"
-                   data-bs-toggle="tooltip"
-                   title="Any non-empty password is accepted - even a single character.">
-            <% if @user.errors[:password].any? %>
-              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password).to_sentence %></div>
-            <% end %>
-          </div>
-
-          <div class="mb-3">
-            <%= f.label :password_confirmation, "Confirm password", class: "form-label", for: getUniqIdValue("user-password-confirmation") %>
-            <input type="password" name="user[password_confirmation]"
-                   id="<%= getUniqIdValue("user-password-confirmation") %>"
-                   required autocomplete="new-password"
-                   class="form-control <%= 'is-invalid' if @user.errors[:password_confirmation].any? %>"
-                   data-bs-toggle="tooltip" title="Repeat the password to avoid typos.">
-            <% if @user.errors[:password_confirmation].any? %>
-              <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password_confirmation).to_sentence %></div>
-            <% end %>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center">
-            <%= f.submit "Register", class: "btn btn-primary" %>
-            <span class="small text-body-secondary">
-              Already registered? <%= link_to "Sign in", login_path, class: "link-primary" %>
-            </span>
-          </div>
-        <% end %>
-      </div>
+      </ul>
     </div>
   </div>
+<% end %>
+
+<%= form_with model: @user, url: signup_path, method: :post, local: true, id: "registration-form" do |f| %>
+  <div class="auth-field">
+    <%= f.label :name, "Name", class: "form-label", for: getUniqIdValue("user-name") %>
+    <i class="bi bi-person auth-field-icon" aria-hidden="true"></i>
+    <input type="text" name="user[name]" id="<%= getUniqIdValue("user-name") %>"
+           value="<%= @user.name %>" required maxlength="120" autocomplete="name"
+           class="form-control <%= 'is-invalid' if @user.errors[:name].any? %>"
+           data-bs-toggle="tooltip" title="The name that is shown in the user table.">
+    <% if @user.errors[:name].any? %>
+      <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:name).to_sentence %></div>
+    <% end %>
+  </div>
+
+  <div class="auth-field">
+    <%= f.label :email, "E-mail", class: "form-label", for: getUniqIdValue("user-email") %>
+    <i class="bi bi-envelope auth-field-icon" aria-hidden="true"></i>
+    <input type="email" name="user[email]" id="<%= getUniqIdValue("user-email") %>"
+           value="<%= @user.email %>" required autocomplete="username"
+           class="form-control <%= 'is-invalid' if @user.errors[:email].any? %>"
+           data-bs-toggle="tooltip"
+           title="The e-mail must be unique - a UNIQUE INDEX in the database guarantees it.">
+    <% if @user.errors[:email].any? %>
+      <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:email).to_sentence %></div>
+    <% end %>
+  </div>
+
+  <div class="auth-field">
+    <%= f.label :password, "Password", class: "form-label", for: getUniqIdValue("user-password") %>
+    <i class="bi bi-key auth-field-icon" aria-hidden="true"></i>
+    <input type="password" name="user[password]" id="<%= getUniqIdValue("user-password") %>"
+           required autocomplete="new-password"
+           class="form-control <%= 'is-invalid' if @user.errors[:password].any? %>"
+           data-bs-toggle="tooltip"
+           title="Any non-empty password is accepted - even a single character.">
+    <button type="button" class="auth-field-action" data-toggle-password="<%= getUniqIdValue("user-password") %>"
+            aria-label="Show the password" data-bs-toggle="tooltip" title="Show the password">
+      <i class="bi bi-eye" aria-hidden="true"></i>
+    </button>
+    <% if @user.errors[:password].any? %>
+      <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password).to_sentence %></div>
+    <% end %>
+  </div>
+
+  <div class="auth-field">
+    <%= f.label :password_confirmation, "Confirm password", class: "form-label", for: getUniqIdValue("user-password-confirmation") %>
+    <i class="bi bi-key-fill auth-field-icon" aria-hidden="true"></i>
+    <input type="password" name="user[password_confirmation]"
+           id="<%= getUniqIdValue("user-password-confirmation") %>"
+           required autocomplete="new-password"
+           class="form-control <%= 'is-invalid' if @user.errors[:password_confirmation].any? %>"
+           data-bs-toggle="tooltip" title="Repeat the password to avoid typos.">
+    <% if @user.errors[:password_confirmation].any? %>
+      <div class="invalid-feedback d-block"><%= @user.errors.full_messages_for(:password_confirmation).to_sentence %></div>
+    <% end %>
+  </div>
+
+  <%= f.submit "Create the account", class: "btn btn-primary auth-submit" %>
+<% end %>
+
+<div class="auth-foot">
+  <span>Already registered? <%= link_to "Sign in", login_path %></span>
+  <span><%= link_to "User table", users_path, class: "text-decoration-none" %> &middot; <%= link_to "Assistant", assistant_path, class: "text-decoration-none" %></span>
+</div>
+
+<div class="auth-note">
+  <i class="bi bi-database-check" aria-hidden="true"></i>
+  <span>
+    The e-mail is unique - the guarantee is a <strong>UNIQUE INDEX</strong> in PostgreSQL,
+    therefore two registrations with the same address can never succeed at the same time.
+  </span>
 </div>

@@ -1,39 +1,25 @@
 # frozen_string_literal: true
 
-# The visual check of the panel.
+# The visual check of the new design.
 #
-# IMPORTANT: the script drives a REAL browser (Chrome), signs in, and stores
-# the screenshots of the important pages in tmp/screenshots. It is used to
-# verify that the table, the toolbar and the forms look right - in a desktop
-# and in a mobile resolution.
+# It drives a real browser (Chrome) and stores the screenshots of the pages in
+# tmp/screenshots - the login form, the registration form, the table and the
+# assistant, in a desktop and in a mobile resolution.
 #
-# Usage:
-#   bin/rails server -p 3100          # in another terminal
-#   bundle exec ruby script/screenshot.rb http://127.0.0.1:3100
+# Usage: bundle exec ruby script/screenshot.rb http://127.0.0.1:3200
 
 require "selenium-webdriver"
 require "fileutils"
 
-# NOTE: the script can be started without Rails (it only needs the browser),
-# therefore the root directory is resolved by hand.
-ROOT = File.expand_path("..", __dir__)
-
-BASE_URL = ARGV[0] || "http://127.0.0.1:3100"
+BASE_URL = (ARGV[0] || "http://127.0.0.1:3100").chomp("/")
 EMAIL = ENV.fetch("SCREENSHOT_EMAIL", "ada@example.com")
 PASSWORD = ENV.fetch("SCREENSHOT_PASSWORD", "demo")
-OUTPUT = File.join(ROOT, "tmp", "screenshots")
+OUTPUT = File.join(File.expand_path("..", __dir__), "tmp", "screenshots")
 
 FileUtils.mkdir_p(OUTPUT)
 
-options = Selenium::WebDriver::Chrome::Options.new
-options.add_argument("--headless=new")
-options.add_argument("--window-size=1440,900")
-options.add_argument("--hide-scrollbars")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-gpu")
-
-# Small helper: waits until the page is completely loaded.
-def wait_for_page(driver, timeout = 10)
+# Small function: waits until the page is completely loaded.
+def wait_for_page(driver, timeout = 15)
   deadline = Time.now + timeout
   sleep 0.2 while driver.execute_script("return document.readyState") != "complete" && Time.now < deadline
 end
@@ -45,61 +31,77 @@ def shot(driver, name)
   puts "saved: #{path}"
 end
 
-driver = Selenium::WebDriver.for(:chrome, options: options)
+# Small function: clicks an element (the tooltip of Bootstrap can cover an
+# element, therefore the click is done with javascript).
+def click(driver, element)
+  driver.execute_script("arguments[0].click();", element)
+  sleep 0.4
+end
+
+def build_options(width, height)
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument("--headless=new")
+  options.add_argument("--window-size=#{width},#{height}")
+  options.add_argument("--hide-scrollbars")
+  options.add_argument("--no-sandbox")
+  options.add_argument("--disable-gpu")
+  options
+end
+
+def sign_in(driver, email, password)
+  driver.navigate.to("#{BASE_URL}/login")
+  wait_for_page(driver)
+  driver.find_element(id: "login-form").find_element(name: "email").send_keys(email)
+  driver.find_element(id: "login-form").find_element(name: "password").send_keys(password)
+  click(driver, driver.find_element(css: "input[type=submit]"))
+  wait_for_page(driver)
+  sleep 1
+end
+
+puts "== Screenshots of #{BASE_URL} =="
+
+# ----- the desktop -----------------------------------------------------------
+driver = Selenium::WebDriver.for(:chrome, options: build_options(1440, 900))
 
 begin
-  # ----- the login form ------------------------------------------------------
   driver.navigate.to("#{BASE_URL}/login")
   wait_for_page(driver)
   shot(driver, "01_login")
 
-  # ----- sign in -------------------------------------------------------------
-  driver.find_element(id: "login-form").find_element(name: "email").send_keys(EMAIL)
-  driver.find_element(id: "login-form").find_element(name: "password").send_keys(PASSWORD)
-  driver.find_element(css: "input[type=submit]").click
+  driver.navigate.to("#{BASE_URL}/signup")
   wait_for_page(driver)
-  sleep 1
-  shot(driver, "02_users_table")
+  shot(driver, "02_register")
 
-  # ----- the selection + the toolbar ----------------------------------------
+  sign_in(driver, EMAIL, PASSWORD)
+  shot(driver, "03_users_table")
+
   rows = driver.find_elements(css: "#users-table tbody tr[data-user-id]")
-  rows.first(3).each { |row| row.find_element(css: ".row-checkbox").click }
+  click(driver, rows.first(3).map { |row| row.find_element(css: ".row-checkbox") }.first)
   sleep 0.5
-  shot(driver, "03_selection")
+  shot(driver, "04_selection")
 
-  # ----- the assistant --------------------------------------------------------
   driver.find_element(css: "[data-assistant-input]").send_keys("How many users are blocked?")
-  driver.find_element(id: "assistant-run").click
+  click(driver, driver.find_element(id: "assistant-run"))
   sleep 3
-  shot(driver, "04_assistant_answer")
+  shot(driver, "05_assistant_answer")
 
-  # ----- the assistant page --------------------------------------------------
   driver.navigate.to("#{BASE_URL}/assistant")
   wait_for_page(driver)
-  shot(driver, "05_assistant_page")
-
-  # ----- the mobile resolution ----------------------------------------------
-  mobile = Selenium::WebDriver::Chrome::Options.new
-  mobile.add_argument("--headless=new")
-  mobile.add_argument("--window-size=390,844")
-  mobile.add_argument("--hide-scrollbars")
-  mobile.add_argument("--no-sandbox")
-
-  mobile_driver = Selenium::WebDriver.for(:chrome, options: mobile)
-  begin
-    mobile_driver.navigate.to("#{BASE_URL}/login")
-    wait_for_page(mobile_driver)
-    shot(mobile_driver, "06_login_mobile")
-
-    mobile_driver.find_element(id: "login-form").find_element(name: "email").send_keys(EMAIL)
-    mobile_driver.find_element(id: "login-form").find_element(name: "password").send_keys(PASSWORD)
-    mobile_driver.find_element(css: "input[type=submit]").click
-    wait_for_page(mobile_driver)
-    sleep 1
-    shot(mobile_driver, "07_users_table_mobile")
-  ensure
-    mobile_driver.quit
-  end
+  shot(driver, "06_assistant_page")
 ensure
   driver.quit
+end
+
+# ----- the mobile ------------------------------------------------------------
+mobile = Selenium::WebDriver.for(:chrome, options: build_options(390, 844))
+
+begin
+  mobile.navigate.to("#{BASE_URL}/login")
+  wait_for_page(mobile)
+  shot(mobile, "07_login_mobile")
+
+  sign_in(mobile, EMAIL, PASSWORD)
+  shot(mobile, "08_users_table_mobile")
+ensure
+  mobile.quit
 end

@@ -2,6 +2,13 @@
 
 # Handles the sign in form.
 class SessionsController < ApplicationController
+  # NOTE: the sign in and the registration use their own layout - the split
+  # screen of the reference design.
+  layout "auth"
+
+  # NOTE: how long a "remembered" session lives.
+  REMEMBER_PERIOD = 30.days
+
   # NOTE: GET /login - the sign in form.
   def new
     # IMPORTANT: an already authenticated (and not blocked) user has no reason
@@ -40,6 +47,14 @@ class SessionsController < ApplicationController
     if user.authenticate(password)
       # NOTE: session fixation protection - a brand new session id is issued.
       reset_session
+
+      # IMPORTANT: the "remember me" checkbox decides how long the session
+      # cookie lives - a remembered account survives the restart of the
+      # browser.
+      if params[:remember_me] == "1"
+        request.session_options[:expire_after] = REMEMBER_PERIOD
+      end
+
       session[:user_id] = user.id
       user.record_login!
       redirect_to users_path, notice: "Signed in as #{user.email}."

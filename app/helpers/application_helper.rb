@@ -36,7 +36,7 @@ module ApplicationHelper
   # IMPORTANT: the timestamps are always shown in the same format, so that the
   # table stays aligned and comparable.
   def format_timestamp(time)
-    return tag.span("—", class: "text-body-secondary") if time.blank?
+    return tag.span("—", class: "cell-muted") if time.blank?
 
     tag.span(time.strftime("%Y-%m-%d %H:%M"), class: "text-nowrap")
   end

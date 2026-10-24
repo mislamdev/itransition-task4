@@ -9,6 +9,12 @@ Rails.application.configure do
   # Do not eager load code on boot.
   config.eager_load = false
 
+  # IMPORTANT: the manifest of the assets is only used in production. In the
+  # development environment the dynamic resolver of the pipeline is used,
+  # otherwise a file that was added later (e.g. a new theme file) would not
+  # be found.
+  config.assets.manifest_path = Rails.root.join("tmp/assets/.manifest.json")
+
   # Show full error reports.
   config.consider_all_requests_local = true
 

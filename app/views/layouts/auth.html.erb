@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= page_title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sign in to the user management panel.">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# NOTE: the same theme as the application - only the layout of the page
+        is different (the split screen of the sign in and the registration). %>
+    <%= stylesheet_link_tag "bootstrap.min.css" %>
+    <%= stylesheet_link_tag "bootstrap-icons.min.css" %>
+    <%= stylesheet_link_tag "theme/tokens.css" %>
+    <%= stylesheet_link_tag "theme/bootstrap-theme.css" %>
+    <%= stylesheet_link_tag "theme/components.css" %>
+    <%= stylesheet_link_tag "application.css" %>
+
+    <%= javascript_include_tag "bootstrap.bundle.min.js" %>
+    <%= javascript_include_tag "app.js", defer: true %>
+  </head>
+
+  <body>
+    <div class="auth-shell">
+      <%# ------------------------------------------------------------------- %>
+      <%# THE FORM - the left half of the screen. %>
+      <%# ------------------------------------------------------------------- %>
+      <section class="auth-panel">
+        <%= render "shared/brand" %>
+
+        <div class="auth-panel-inner">
+          <div class="auth-body">
+            <%= render "shared/flash" %>
+            <%= yield %>
+          </div>
+        </div>
+      </section>
+
+      <%# ------------------------------------------------------------------- %>
+      <%# THE DECORATIVE PANEL - the right half of the screen. %>
+      <%# NOTE: the pattern is drawn with CSS (no image, no animation).       %>
+      <%# ------------------------------------------------------------------- %>
+      <aside class="auth-art" aria-hidden="true">
+        <div class="auth-art-content">
+          <span class="auth-art-pill">
+            <i class="bi bi-shield-check"></i> Admin console
+          </span>
+
+          <h2 class="auth-art-title">Every account, one table.</h2>
+
+          <p class="auth-art-lead">
+            Registration, authentication and the administration of the users -
+            the uniqueness of the e-mail is guaranteed by the database itself.
+          </p>
+
+          <div class="auth-art-facts">
+            <div class="auth-art-fact">
+              <strong><%= User.count %></strong>
+              <span>accounts in the table</span>
+            </div>
+            <div class="auth-art-fact">
+              <strong>UNIQUE</strong>
+              <span>index on the e-mail column</span>
+            </div>
+            <div class="auth-art-fact">
+              <strong>1 request</strong>
+              <span>the account is checked on every request</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </body>
+</html>

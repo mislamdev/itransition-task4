@@ -1,38 +1,42 @@
-<div class="container-xxl">
+<div class="app-main">
 
-  <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <%# ----------------------------------------------------------------------- %>
+  <%# THE HEADER OF THE PAGE. %>
+  <%# ----------------------------------------------------------------------- %>
+  <div class="page-header">
     <div>
-      <h1 class="h4 mb-1">Assistant</h1>
-      <p class="text-body-secondary mb-0">
+      <h1 class="page-title">Assistant</h1>
+      <p class="page-subtitle">
         Ask a question about the users or give a command that controls the user table.
       </p>
     </div>
     <div>
-      <%= link_to "Back to the table", users_path, class: "btn btn-outline-secondary btn-sm" %>
+      <%= link_to "Back to the table", users_path, class: "btn btn-light btn-sm" %>
     </div>
   </div>
 
   <%# NOTE: the very same markup as on the dashboard, so that one javascript
       file can drive both pages. %>
-  <div class="card mb-3" id="assistant-card">
-    <div class="card-header bg-body-tertiary">
-      <h2 class="h6 mb-0"><i class="bi bi-chat-square-text me-1" aria-hidden="true"></i>Question or command</h2>
+  <div class="card assistant-card mb-3" id="assistant-card">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+      <h2 class="h6 mb-0">Question or command</h2>
     </div>
     <div class="card-body">
       <form id="assistant-form" class="row g-2" autocomplete="off">
         <div class="col-12 col-md">
           <label class="visually-hidden" for="<%= getUniqIdValue("assistant-input") %>">Question or command</label>
-          <input type="text" class="form-control" id="<%= getUniqIdValue("assistant-input") %>"
+          <input type="text" class="form-control assistant-input" id="<%= getUniqIdValue("assistant-input") %>"
                  name="command" placeholder="How many users logged in during the last 7 days?"
                  data-assistant-input
                  data-bs-toggle="tooltip"
                  title="The assistant translates the question into a query and asks the REST API - the numbers come from PostgreSQL.">
         </div>
         <div class="col-12 col-md-auto d-flex gap-2">
-          <button type="submit" class="btn btn-primary" id="assistant-run">
+          <button type="submit" class="btn btn-primary px-4" id="assistant-run">
             <i class="bi bi-send me-1" aria-hidden="true"></i>Run
           </button>
-          <button type="button" class="btn btn-outline-secondary" id="assistant-clear"
+          <button type="button" class="btn btn-light" id="assistant-clear"
                   data-bs-toggle="tooltip" title="Clear the answer">
             <i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Clear</span>
           </button>
@@ -40,13 +44,13 @@
       </form>
 
       <div id="assistant-output" class="mt-3 d-none">
-        <div class="alert alert-info mb-2" role="status" id="assistant-answer">
-          <i class="bi bi-chat-left-text me-2" aria-hidden="true"></i>
+        <div class="alert assistant-answer d-flex align-items-start gap-2" role="status" id="assistant-answer">
+          <i class="bi bi-chat-left-text-fill mt-1" aria-hidden="true"></i>
           <span class="assistant-answer-text"></span>
         </div>
-        <details class="small text-body-secondary">
+        <details class="small text-body-secondary mt-2">
           <summary>Show the API calls and the plan</summary>
-          <pre class="bg-body-tertiary border rounded p-2 mt-2 mb-0 assistant-plan" style="white-space: pre-wrap;"></pre>
+          <pre class="assistant-plan mt-2 mb-0"></pre>
         </details>
       </div>
     </div>
@@ -56,12 +60,15 @@
     <%# NOTE: the example questions. %>
     <div class="col-12 col-lg-6">
       <div class="card h-100">
-        <div class="card-header bg-body-tertiary"><h2 class="h6 mb-0">Example questions</h2></div>
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-question-circle" aria-hidden="true"></i>
+          <h2 class="h6 mb-0">Example questions</h2>
+        </div>
         <div class="card-body">
-          <ul class="list-unstyled mb-0">
+          <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
             <% AssistantSuggestions::QUESTIONS.each do |question| %>
-              <li class="mb-2">
-                <button type="button" class="btn btn-outline-secondary btn-sm text-start"
+              <li>
+                <button type="button" class="btn btn-light btn-sm text-start w-100"
                         data-assistant-example="<%= question %>">
                   <i class="bi bi-arrow-return-left me-1" aria-hidden="true"></i><%= question %>
                 </button>
@@ -75,12 +82,15 @@
     <%# NOTE: the example commands for the table. %>
     <div class="col-12 col-lg-6">
       <div class="card h-100">
-        <div class="card-header bg-body-tertiary"><h2 class="h6 mb-0">Example commands</h2></div>
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-terminal" aria-hidden="true"></i>
+          <h2 class="h6 mb-0">Example commands</h2>
+        </div>
         <div class="card-body">
-          <ul class="list-unstyled mb-0">
+          <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
             <% AssistantSuggestions::COMMANDS.each do |command| %>
-              <li class="mb-2">
-                <button type="button" class="btn btn-outline-secondary btn-sm text-start"
+              <li>
+                <button type="button" class="btn btn-light btn-sm text-start w-100"
                         data-assistant-example="<%= command %>">
                   <i class="bi bi-arrow-return-left me-1" aria-hidden="true"></i><%= command %>
                 </button>
@@ -93,7 +103,10 @@
   </div>
 
   <div class="card mt-3">
-    <div class="card-header bg-body-tertiary"><h2 class="h6 mb-0">How it works</h2></div>
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="bi bi-diagram-3" aria-hidden="true"></i>
+      <h2 class="h6 mb-0">How it works</h2>
+    </div>
     <div class="card-body small text-body-secondary">
       <ol class="mb-2">
         <li>The sentence is translated into a structured plan (a filter, a sort, an operation).</li>

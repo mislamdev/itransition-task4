@@ -11,7 +11,7 @@ about the data and **controls the dashboard**.
 | CSS framework | Bootstrap 5.3.3 + Bootstrap Icons 1.11.3 (served from the app itself) |
 | Passwords | `has_secure_password` + bcrypt |
 | Server | Puma, published over a Cloudflare TLS tunnel |
-| Tests | 61 Minitest tests (214 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks) |
+| Tests | 63 Minitest tests (222 assertions), a Postman collection (17 assertions), an acceptance test of the deployed application (21 checks), a browser check of the toolbar (13 checks) |
 
 ---
 
@@ -76,7 +76,36 @@ bin/rails server -p 3100
 
 ---
 
-## 2. How the requirements are implemented
+## 2. The design
+
+The interface is built with **Bootstrap 5.3** and a **design system of design
+tokens** — the whole look of the application can be changed by editing one
+file.
+
+```
+app/assets/stylesheets/
+├── bootstrap.min.css           the CSS framework
+├── theme/
+│   ├── tokens.css              THE TOKENS - the palette, the shapes, the type
+│   ├── bootstrap-theme.css      the mapping of the tokens onto Bootstrap
+│   └── components.css          the components of the application
+└── application.css             the rules of the pages
+```
+
+* the **sign in page** is a split screen: the form on the left, a geometric
+  panel (pure CSS, no image, no animation) on the right;
+* the **table** stands on a plain surface — the task asks for no wallpaper
+  under the table;
+* **no animations**, **no browser alerts**, **tooltips** on every action,
+  **status messages** as Bootstrap alerts.
+
+The complete documentation of the design system (the tokens, the components,
+the rules and the recipes for a new component) is in
+[`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md).
+
+---
+
+## 3. How the requirements are implemented
 
 ### 2.1 The unique index in the database (requirement 1)
 
@@ -207,7 +236,7 @@ end
 
 ---
 
-## 3. Part 2 — ask the data in natural language
+## 4. Part 2 — ask the data in natural language
 
 > *"Add the capability to ask question about your data/users using natural
 > language and get answers as text. … You need to implement some API for AI to
@@ -285,7 +314,7 @@ export LLM_MODEL=gpt-4o-mini
 
 ---
 
-## 4. Part 3 — the bot controls the dashboard
+## 5. Part 3 — the bot controls the dashboard
 
 > *"Make AI-bot able to control your dashboard or application, to do the
 > commands like 'select users with e-mails started with s or p'."*
@@ -313,10 +342,10 @@ the page, and the plan plus the API calls can be opened below the answer
 
 ---
 
-## 5. The tests
+## 6. The tests
 
 ```bash
-bin/rails test          # 61 tests, 214 assertions
+bin/rails test          # 63 tests, 222 assertions
 ```
 
 > The **CSRF protection is enabled in the test environment** — the tests send
@@ -405,7 +434,7 @@ the toolbar work together in a browser and not only in the test suite.
 
 ---
 
-## 6. The structure of the project
+## 7. The structure of the project
 
 ```
 app/
@@ -431,12 +460,19 @@ app/
     users/index.html.erb             the table + the toolbar + the assistant
     assistant/index.html.erb         the assistant page
   assets/
-    stylesheets/                     Bootstrap, Bootstrap Icons, application.css
+    stylesheets/
+      theme/tokens.css               THE DESIGN TOKENS
+      theme/bootstrap-theme.css      the mapping onto Bootstrap
+      theme/components.css           the components
+      bootstrap.min.css              the framework
+      bootstrap-icons.min.css        the icons
+      application.css                the rules of the pages
     javascripts/                    Bootstrap bundle, app.js
 db/migrate/20260101000001_create_users.rb   the UNIQUE INDEXes
 db/migrate/20260101000002_add_position_to_users.rb
 openapi/openapi.yaml                the contract of the API
 postman/                             the collection and the environments
+docs/DESIGN_SYSTEM.md                the documentation of the design system
 deploy/                              the launch agent of the server
 script/screenshot.rb                 the visual check
 script/acceptance.rb                 the acceptance test of the deployed app
@@ -446,7 +482,7 @@ users.json                           the data set of the task (imported by the s
 
 ---
 
-## 7. Notes
+## 8. Notes
 
 * **The database is the guarantee.** The application code only produces the
   friendly messages; the uniqueness of the e-mail is enforced by PostgreSQL.

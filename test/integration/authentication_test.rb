@@ -118,6 +118,28 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_select ".alert-success", text: /signed out/i
   end
 
+  # NOTE: the "remember me" checkbox of the sign in form - the session of a
+  # remembered account survives the restart of the browser.
+  test "the session of a remembered account expires in 30 days" do
+    user = create_user(email: "remembered@example.com")
+
+    post login_path, params: { email: user.email, password: "a", remember_me: "1",
+                               authenticity_token: csrf_token }
+
+    assert_redirected_to users_path
+    assert_equal 30.days.to_i, request.session_options[:expire_after].to_i
+  end
+
+  test "the session of a normal account ends with the browser" do
+    user = create_user(email: "temporary@example.com")
+
+    post login_path, params: { email: user.email, password: "a",
+                               authenticity_token: csrf_token }
+
+    assert_redirected_to users_path
+    assert_nil request.session_options[:expire_after]
+  end
+
   test "the assistant page is protected as well" do
     get assistant_path
 

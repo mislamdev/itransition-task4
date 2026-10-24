@@ -1,17 +1,18 @@
 /* =============================================================================
-   The styles of the user management panel.
+   THE PAGE RULES OF THE APPLICATION
+   -----------------------------------------------------------------------------
+   IMPORTANT: the design itself lives in the theme:
+     theme/tokens.css         - the design tokens (the palette, the shapes, ...)
+     theme/bootstrap-theme.css - the mapping of the tokens onto Bootstrap
+     theme/components.css      - the components of the application
 
-   IMPORTANT:
-   - NO ANIMATIONS. Every transition and every animation of the CSS framework
-     is switched off, so nothing moves on the page.
-   - NO WALLPAPER. The background is a plain, solid colour - the table stands on
-     a neutral surface, like a business application.
-   - The table looks like a table: visible borders, a sticky looking header
-     row, aligned columns and a hover state for the rows.
+   This file only holds the rules that belong to ONE page or to the behaviour
+   of the whole application.
    ============================================================================= */
 
 /* NOTE: the global switch for animations - Bootstrap uses transitions for
-   alerts, tooltips and collapse; they are all disabled here. */
+   alerts, tooltips and collapse; they are all disabled here. The application
+   must not move anything. */
 *,
 *::before,
 *::after {
@@ -20,108 +21,36 @@
   scroll-behavior: auto !important;
 }
 
-/* NOTE: a plain surface, no image, no gradient. */
+/* NOTE: a plain surface, no image, no gradient - the table stands on a
+   neutral background, like a business application. */
 body {
-  background-color: #f4f6f8;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  font-family: var(--theme-font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* NOTE: the cards of the panel: a light border, no shadow noise. */
-.card {
-  border: 1px solid #d8dde3;
-  border-radius: 4px;
-  background-color: #ffffff;
+/* NOTE: the main area of the application - the page header and the cards. */
+.app-main {
+  padding: clamp(1rem, 2.5vw, 2rem);
 }
 
-.card-header {
-  border-bottom: 1px solid #d8dde3;
-  font-weight: 600;
+/* NOTE: the flash messages are placed above the content of the page. */
+.app-flash {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 2.5vw, 2rem);
 }
 
-/* NOTE: the toolbar above the table - a real toolbar: one group of buttons,
-   aligned to the left, the state of the table on the right. */
-#users-table thead th {
-  background-color: #eef1f4;
-  border-bottom: 2px solid #c9d0d8;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: #495057;
-  white-space: nowrap;
-  vertical-align: middle;
+/* NOTE: the table of the user management - the caption of the table is only
+   for the screen readers. */
+#users-table caption {
+  caption-side: top;
 }
 
-#users-table tbody td {
-  border-color: #e6e9ed;
-  font-size: 0.92rem;
-  vertical-align: middle;
-}
-
-/* NOTE: the rows are clickable, the pointer shows it. */
-#users-table tbody tr {
-  cursor: pointer;
-}
-
-#users-table tbody tr:hover {
-  background-color: #f0f4f8;
-}
-
-/* NOTE: the leftmost column with the checkboxes stays narrow. */
-.checkbox-column {
-  width: 3rem;
-  text-align: center;
-}
-
-/* NOTE: the link that sorts a column. */
-.table-sort-link {
-  color: inherit;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.table-sort-link:hover,
-.table-sort-link:focus {
-  text-decoration: underline;
-}
-
-.table-sort-link .sort-icon {
-  font-size: 0.7rem;
-  opacity: 0.55;
-}
-
-.table-sort-link.is-active {
-  color: #0b5ed7;
-}
-
-/* NOTE: the badges of the status column keep a fixed width, so the column is
-   aligned in every row. */
-#users-table .badge {
-  min-width: 4.5rem;
-  font-weight: 500;
-}
-
-/* NOTE: the assistant answer area. */
-#assistant-output .assistant-answer-text {
-  white-space: pre-wrap;
-}
-
-.assistant-plan {
-  max-height: 18rem;
-  overflow: auto;
-  font-size: 0.78rem;
-}
-
-/* NOTE: on small screens the toolbar buttons stay usable. */
-@media (max-width: 575.98px) {
-  .card-header {
-    flex-wrap: wrap;
-  }
-
-  #users-table thead th,
-  #users-table tbody td {
-    padding: 0.45rem 0.5rem;
-    font-size: 0.85rem;
-  }
+/* NOTE: the plan of the assistant is shown in a dark block - the colours are
+   hard coded here, because they belong to the code block and not to the
+   theme. */
+.assistant-plan code {
+  color: #d6e2ff;
 }

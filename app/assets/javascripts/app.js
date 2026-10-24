@@ -60,6 +60,13 @@
       if (deleteButton) deleteButton.disabled = selected.length === 0;
       if (countElement) countElement.textContent = String(selected.length);
 
+      // NOTE: the selected rows are marked, so that the selection is visible
+      // in the table itself.
+      rows.forEach(function (row) {
+        var checkbox = row.querySelector(".row-checkbox");
+        row.classList.toggle("is-selected", !!checkbox && checkbox.checked);
+      });
+
       if (selectAll) {
         var total = checkboxes.length;
         selectAll.checked = total > 0 && selected.length === total;
@@ -258,9 +265,36 @@
       });
     });  }
 
+  // ===========================================================================
+  // The button that shows the password (the sign in and the registration).
+  // ===========================================================================
+  function initPasswordToggles() {
+    document.querySelectorAll("[data-toggle-password]").forEach(function (button) {
+      if (button.dataset.togglePasswordBound) return;
+      button.dataset.togglePasswordBound = "true";
+
+      button.addEventListener("click", function () {
+        var input = document.getElementById(button.getAttribute("data-toggle-password"));
+        if (!input) return;
+
+        var hidden = input.type === "password";
+        input.type = hidden ? "text" : "password";
+        button.setAttribute("aria-label", hidden ? "Hide the password" : "Show the password");
+
+        var icon = button.querySelector("i");
+        if (icon) icon.className = hidden ? "bi bi-eye-slash" : "bi bi-eye";
+
+        if (typeof bootstrap !== "undefined" && bootstrap.Tooltip.getInstance(button)) {
+          bootstrap.Tooltip.getInstance(button).setContent({ ".tooltip-inner": hidden ? "Hide the password" : "Show the password" });
+        }
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initTooltips();
     initSelection();
     initAssistant();
+    initPasswordToggles();
   });
 })();

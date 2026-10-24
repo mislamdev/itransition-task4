@@ -1,42 +1,64 @@
-<%# NOTE: the sign in form. A visitor that is not signed in only sees this
-    form and the registration form - nothing else. %>
-<div class="row justify-content-center">
-  <div class="col-12 col-sm-9 col-md-7 col-lg-5">
-    <div class="card shadow-sm">
-      <div class="card-header bg-body-tertiary">
-        <h1 class="h5 mb-0"><i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Sign in</h1>
-      </div>
+<%# NOTE: the sign in form - the left half of the split screen.
+    IMPORTANT: the form is the same form as before, it only has a modern
+    design: a caption, a heading, fields with an icon and a full width button. %>
+<p class="auth-eyebrow">Start your journey</p>
+<h1 class="auth-title">Sign in to User Management</h1>
+<p class="auth-lead">
+  Use the e-mail address you registered with. Any non-empty password is accepted.
+</p>
 
-      <div class="card-body">
-        <%= form_with url: login_path, method: :post, local: true, id: "login-form" do %>
-          <div class="mb-3">
-            <%= label_tag :email, "E-mail", class: "form-label", for: getUniqIdValue("login-email") %>
-            <%# IMPORTANT: the id of the input and the "for" of the label are
-                produced by getUniqIdValue, so they always match. %>
-            <input type="email" name="email" id="<%= getUniqIdValue("login-email") %>"
-                   value="<%= @email %>" required autofocus autocomplete="username"
-                   class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
-                   data-bs-toggle="tooltip"
-                   title="The e-mail address you registered with.">
-          </div>
-
-          <div class="mb-3">
-            <%= label_tag :password, "Password", class: "form-label", for: getUniqIdValue("login-password") %>
-            <input type="password" name="password" id="<%= getUniqIdValue("login-password") %>"
-                   required autocomplete="current-password"
-                   class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
-                   data-bs-toggle="tooltip"
-                   title="Any non-empty password is accepted - one character is enough.">
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center">
-            <%= submit_tag "Sign in", class: "btn btn-primary" %>
-            <span class="small text-body-secondary">
-              No account yet? <%= link_to "Register", signup_path, class: "link-primary" %>
-            </span>
-          </div>
-        <% end %>
-      </div>
-    </div>
+<%= form_with url: login_path, method: :post, local: true, id: "login-form" do %>
+  <%# NOTE: the e-mail. The icon is a decoration, the label is the real label
+      of the field (the "for" attribute points to the id of the input). %>
+  <div class="auth-field">
+    <%= label_tag :email, "E-mail", class: "form-label", for: getUniqIdValue("login-email") %>
+    <i class="bi bi-envelope auth-field-icon" aria-hidden="true"></i>
+    <input type="email" name="email" id="<%= getUniqIdValue("login-email") %>"
+           value="<%= @email %>" required autofocus autocomplete="username"
+           class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
+           data-bs-toggle="tooltip"
+           title="The e-mail address you registered with.">
   </div>
+
+  <%# NOTE: the password with the button that shows the password. %>
+  <div class="auth-field">
+    <%= label_tag :password, "Password", class: "form-label", for: getUniqIdValue("login-password") %>
+    <i class="bi bi-key auth-field-icon" aria-hidden="true"></i>
+    <input type="password" name="password" id="<%= getUniqIdValue("login-password") %>"
+           required autocomplete="current-password"
+           class="form-control <%= 'is-invalid' if flash[:alert].present? %>"
+           data-bs-toggle="tooltip"
+           title="Any non-empty password is accepted - one character is enough.">
+    <button type="button" class="auth-field-action" data-toggle-password="<%= getUniqIdValue("login-password") %>"
+            aria-label="Show the password" data-bs-toggle="tooltip" title="Show the password">
+      <i class="bi bi-eye" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="auth-options">
+    <div class="form-check">
+      <%# NOTE: "remember me" - the session of a remembered account survives
+          the restart of the browser (30 days). %>
+      <input class="form-check-input" type="checkbox" name="remember_me" value="1" id="<%= getUniqIdValue("login-remember") %>">
+      <label class="form-check-label" for="<%= getUniqIdValue("login-remember") %>">Remember me</label>
+    </div>
+    <span class="text-body-secondary">
+      <i class="bi bi-info-circle me-1" aria-hidden="true"></i>Blocked? Ask an administrator.
+    </span>
+  </div>
+
+  <%= submit_tag "Sign in", class: "btn btn-primary auth-submit" %>
+<% end %>
+
+<div class="auth-foot">
+  <span>Don't have an account? <%= link_to "Sign up", signup_path %></span>
+  <span><%= link_to "User table", users_path, class: "text-decoration-none" %> &middot; <%= link_to "Assistant", assistant_path, class: "text-decoration-none" %></span>
+</div>
+
+<div class="auth-note">
+  <i class="bi bi-shield-lock" aria-hidden="true"></i>
+  <span>
+    The session is checked on <strong>every</strong> request: as soon as an account is
+    blocked or deleted, the next request goes back to this page.
+  </span>
 </div>

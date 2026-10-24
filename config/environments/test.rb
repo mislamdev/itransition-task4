@@ -31,6 +31,11 @@ Rails.application.configure do
   # finds out that such a form needs a token that is valid for every action.
   config.action_controller.allow_forgery_protection = true
 
+  # IMPORTANT: the manifest of the assets is only used in production. In the
+  # test environment the dynamic resolver of the pipeline is used, otherwise a
+  # file that was added later (e.g. a new theme file) would not be found.
+  config.assets.manifest_path = Rails.root.join("tmp/assets/.manifest.json")
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 

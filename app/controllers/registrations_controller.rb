@@ -5,6 +5,9 @@
 # IMPORTANT: "Users are registered right away" - the account is created
 # immediately, it is NOT waiting for an approval and it is NOT blocked.
 class RegistrationsController < ApplicationController
+  # NOTE: the registration uses the same layout as the sign in.
+  layout "auth"
+
   # NOTE: GET /signup - the registration form.
   def new
     if signed_in?

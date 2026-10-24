@@ -7,23 +7,28 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%# NOTE: Bootstrap and Bootstrap Icons are served from the application itself
-        (app/assets), so the panel also works without an internet connection. %>
+    <%# NOTE: the order of the stylesheets is the order of the theme:
+        1. the CSS framework,
+        2. the tokens (the design system),
+        3. the mapping of the tokens onto the framework,
+        4. the components of the application,
+        5. the rules of the pages. %>
     <%= stylesheet_link_tag "bootstrap.min.css" %>
     <%= stylesheet_link_tag "bootstrap-icons.min.css" %>
+    <%= stylesheet_link_tag "theme/tokens.css" %>
+    <%= stylesheet_link_tag "theme/bootstrap-theme.css" %>
+    <%= stylesheet_link_tag "theme/components.css" %>
     <%= stylesheet_link_tag "application.css" %>
+
     <%= javascript_include_tag "bootstrap.bundle.min.js" %>
     <%= javascript_include_tag "app.js", defer: true %>
   </head>
 
-  <body class="d-flex flex-column min-vh-100 bg-body-tertiary">
+  <body class="d-flex flex-column min-vh-100">
     <%# NOTE: the standard navigation header of the application. %>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg app-navbar sticky-top">
       <div class="container-fluid">
-        <%= link_to root_path, class: "navbar-brand d-flex align-items-center gap-2" do %>
-          <i class="bi bi-people-fill" aria-hidden="true"></i>
-          <span>User Management</span>
-        <% end %>
+        <%= render "shared/brand" %>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#<%= getUniqIdValue("main-navbar") %>"
@@ -42,16 +47,17 @@
               </li>
             </ul>
 
-            <ul class="navbar-nav align-items-lg-center">
+            <ul class="navbar-nav align-items-lg-center gap-2">
               <li class="nav-item">
-                <span class="navbar-text me-2" title="You are signed in with this account">
-                  <i class="bi bi-person-circle me-1" aria-hidden="true"></i><%= current_user.email %>
+                <span class="account-chip" title="You are signed in with this account">
+                  <span class="account-avatar" aria-hidden="true"><%= current_user.name.to_s.first.to_s.upcase %></span>
+                  <span class="account-email"><%= current_user.email %></span>
                 </span>
               </li>
               <li class="nav-item">
                 <%# NOTE: the sign out button is a form button - no javascript needed. %>
                 <%= button_to "Sign out", logout_path, method: :delete,
-                              class: "btn btn-outline-light btn-sm",
+                              class: "btn btn-light btn-sm",
                               form: { class: "d-inline" } %>
               </li>
             </ul>
@@ -65,13 +71,13 @@
       </div>
     </nav>
 
-    <main class="container-fluid py-4 flex-grow-1">
+    <main class="flex-grow-1">
       <%= render "shared/flash" %>
       <%= yield %>
     </main>
 
-    <footer class="border-top bg-body py-3 mt-auto">
-      <div class="container-fluid small text-body-secondary d-flex flex-wrap justify-content-between gap-2">
+    <footer class="app-footer py-3 mt-auto">
+      <div class="container-fluid small d-flex flex-wrap justify-content-between gap-2">
         <span>User Management &mdash; Ruby on Rails application.</span>
         <span>E-mail uniqueness is enforced by a UNIQUE INDEX in PostgreSQL.</span>
       </div>
