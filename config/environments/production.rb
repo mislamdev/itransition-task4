@@ -21,22 +21,28 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # NOTE: the application is published through a TLS terminating tunnel
-  # (cloudflared). The Rails process itself listens on 127.0.0.1 only, so the
-  # plain HTTP hop between the tunnel and Rails stays inside the machine.
+  # NOTE: the application is published through a TLS terminating proxy - a
+  # tunnel (cloudflared) on this machine or the edge of Render.
+  # The Rails process itself listens on the loopback interface only, so the
+  # plain HTTP hop between the proxy and Rails stays inside the machine.
   #
-  # IMPORTANT: `assume_ssl` is switched off on purpose. The tunnel sends the
-  # header `X-Forwarded-Proto: https`, and Rack uses that header to build the
-  # URLs of the redirects - therefore the application answers with
-  # "https://<public host>" when it is reached through the tunnel and with
-  # "http://127.0.0.1:3100" when it is reached locally.
-  config.assume_ssl = false
+  # IMPORTANT: both switches are read from the environment:
+  #   ASSUME_SSL=true  - the proxy terminates the TLS and sends the header
+  #                      `X-Forwarded-Proto: https` (Render does this).
+  #   FORCE_SSL=true   - the proxy does NOT redirect to HTTPS, therefore Rails
+  #                      has to do it (Render redirects on its own).
+  # On this machine both are off: the tunnel sends the header and redirects
+  # itself.
+  config.assume_ssl = ENV.fetch("ASSUME_SSL", "false") == "true"
+  config.force_ssl = ENV.fetch("FORCE_SSL", "false") == "true"
 
-  # The TLS redirect is done by the tunnel, not by Rails.
-  config.force_ssl = false
-
-  # The secure cookie flag is kept, the tunnel uses HTTPS.
+  # The secure cookie flag is kept, the proxy uses HTTPS.
   config.action_dispatch.cookies_same_site_protection = :lax
+
+  # NOTE: the static files (the assets) are served by the application itself.
+  # IMPORTANT: Render (and every other platform) sets this variable - without
+  # it the stylesheets and the scripts would not be found.
+  config.public_file_server.enabled = ENV.fetch("RAILS_SERVE_STATIC_FILES", "true") == "true"
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }

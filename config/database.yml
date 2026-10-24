@@ -2,6 +2,11 @@
 # database so that e-mail uniqueness is guaranteed by the storage engine even when
 # several processes/sources write at the same time. SQLite would also do it, but
 # PostgreSQL gives us proper concurrent-write behaviour and row level locking.
+#
+# IMPORTANT: if the environment variable DATABASE_URL is set (Render, Heroku,
+# Fly.io, ...), it is used - the platform builds it from its own database
+# instance. Without it the discrete variables below are used, which is what the
+# local installation on this machine does.
 default: &default
   adapter: postgresql
   encoding: unicode
@@ -22,5 +27,8 @@ test:
   database: user_management_test
 
 production:
+  # NOTE: the URL wins - it carries the host, the port, the user, the password
+  # and the name of the database in one string.
+  url: <%= ENV["DATABASE_URL"] %>
   <<: *default
   database: <%= ENV.fetch("DATABASE_NAME", "user_management_production") %>
