@@ -137,8 +137,13 @@ and the registration form turns that database error into a friendly message
 
 * The table is a real HTML table (`<table class="table table-hover align-middle">`)
   with a header row, a body, aligned columns, `text-nowrap` for the
-  timestamps and a centred checkbox column. The columns are: **checkbox, name,
-  e-mail, position, last login, last activity, status**.
+  timestamps and a centred checkbox column. The columns are: **checkbox, name
+  (with the position below it), e-mail, status, last login, last activity** —
+  the design follows the table example of the task
+  (`docs/reference/table-example.png`): the status is a text with a small dot,
+  a blocked account is dimmed and its name is struck through, and the
+  timestamps are relative times ("4 hours ago") with the exact time in the
+  tooltip.
 * The **toolbar is a card header above the table** and it never disappears —
   only the state of its buttons changes (`disabled` when the selection does not
   allow the action):

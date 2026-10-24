@@ -279,6 +279,54 @@
   font-weight: 600;
 }
 
+/* the second line of the name cell (the position of the account) */
+.cell-sub {
+  display: block;
+  font-size: var(--theme-font-size-sm);
+  color: var(--theme-text-subtle);
+  line-height: 1.35;
+}
+
+/* the status of an account - a text with a small coloured dot */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  font-size: var(--theme-font-size-base);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--theme-radius-pill);
+  background-color: var(--theme-slate-400);
+  flex: 0 0 auto;
+}
+
+.status-active .status-dot {
+  background-color: var(--theme-success);
+}
+
+.status-blocked .status-dot {
+  background-color: var(--theme-danger);
+}
+
+/* NOTE: a blocked account is dimmed and its name is struck through - exactly
+   like in the reference of the task. */
+.table-card .table tbody tr.is-blocked {
+  color: var(--theme-text-subtle);
+}
+
+.table-card .table tbody tr.is-blocked .cell-strong {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.table-card .table tbody tr.is-blocked .status {
+  color: var(--theme-text-muted);
+}
+
 /* the toolbar above the table */
 .toolbar {
   display: flex;
@@ -295,13 +343,65 @@
 }
 
 .toolbar-count {
-  margin-left: auto;
   font-size: var(--theme-font-size-sm);
   color: var(--theme-text-muted);
 }
 
 .toolbar-count strong {
   color: var(--theme-text);
+}
+
+/* the filter of the table - it lives in the toolbar */
+.toolbar-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--theme-space-2);
+  margin-left: auto;
+}
+
+.toolbar-search {
+  position: relative;
+}
+
+.toolbar-search i {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--theme-text-subtle);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.toolbar-search input {
+  height: 2.3rem;
+  width: 230px;
+  padding-left: 2.2rem;
+  border-radius: var(--theme-radius-pill);
+  border: 1px solid var(--theme-border);
+  background-color: var(--theme-surface);
+  font-size: var(--theme-font-size-sm);
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow-xs);
+}
+
+.toolbar-search input:focus {
+  outline: 0;
+  border-color: var(--theme-primary);
+  box-shadow: var(--theme-shadow-focus);
+}
+
+.toolbar-select {
+  height: 2.3rem;
+  width: auto;
+  flex: 0 0 auto;
+  border-radius: var(--theme-radius-pill);
+  font-size: var(--theme-font-size-sm);
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0.9rem;
+  padding-right: 2.1rem;
+  box-shadow: var(--theme-shadow-xs);
 }
 
 /* -----------------------------------------------------------------------------

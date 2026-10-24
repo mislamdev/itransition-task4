@@ -32,6 +32,50 @@ module ApplicationHelper
     tag.span(user.status_label, class: "badge #{user.status_badge_class}")
   end
 
+  # Small helper: the status of an account as a text with a small dot.
+  #
+  # IMPORTANT: the reference of the task shows the status as a plain text -
+  # the dot only makes the column easier to read.
+  def status_label(user)
+    content_tag(:span, class: "status status-#{user.status_label.downcase}") do
+      safe_join([content_tag(:i, nil, class: "status-dot"), user.status_label])
+    end
+  end
+
+  # Small helper: a relative time ("5 minutes ago").
+  #
+  # NOTE: the reference of the task shows the last activity as a relative
+  # time, the exact timestamp is in the tooltip of the cell.
+  def relative_time(time)
+    return "never" if time.blank?
+
+    seconds = (Time.current - time).to_i
+    seconds = 0 if seconds.negative?
+
+    case seconds
+    when 0...60      then "less than a minute ago"
+    when 60...3600   then "#{count_of(seconds / 60, 'minute')} ago"
+    when 3600...86_400 then "#{count_of(seconds / 3600, 'hour')} ago"
+    when 86_400...604_800 then "#{count_of(seconds / 86_400, 'day')} ago"
+    when 604_800...2_592_000 then "#{count_of(seconds / 604_800, 'week')} ago"
+    when 2_592_000...31_536_000 then "#{count_of(seconds / 2_592_000, 'month')} ago"
+    else "#{count_of(seconds / 31_536_000, 'year')} ago"
+    end
+  end
+
+  # Small helper: the exact timestamp ("October 12, 2024 15:45:30") - it is
+  # the content of the tooltip of the relative time.
+  def exact_time(time)
+    return "never" if time.blank?
+
+    time.strftime("%B %-d, %Y %H:%M:%S")
+  end
+
+  # Small function: the number and the word ("1 minute", "5 minutes").
+  def count_of(number, word)
+    "#{number} #{number == 1 ? word : "#{word}s"}"
+  end
+
   # Small helper: a readable date/time or a dash when there is no timestamp.
   # IMPORTANT: the timestamps are always shown in the same format, so that the
   # table stays aligned and comparable.

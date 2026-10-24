@@ -88,7 +88,9 @@ The reusable parts of the interface:
 | `.brand`, `.brand-mark`, `.brand-title` | the logo and the wordmark (an inline SVG, no image) |
 | `.app-navbar`, `.account-chip`, `.account-avatar` | the navigation header and the chip with the signed in account |
 | `.page-header`, `.page-title`, `.page-subtitle`, `.stat-pill` | the header of a page and the counters |
-| `.table-card`, `.toolbar`, `.checkbox-column`, `.table-sort-link` | the table with the toolbar above it |
+| `.table-card`, `.toolbar`, `.toolbar-filter`, `.toolbar-search`, `.toolbar-select` | the table with the toolbar above it and the filter inside the toolbar |
+| `.checkbox-column`, `.table-sort-link`, `.cell-strong`, `.cell-sub` | the columns of the table |
+| `.status`, `.status-dot`, `.is-blocked` | the status of an account and the dimmed row of a blocked account |
 | `.assistant-card`, `.assistant-input`, `.assistant-answer`, `.assistant-plan` | the assistant |
 | `.auth-shell`, `.auth-panel`, `.auth-art`, `.auth-field`, `.auth-submit` | the split screen of the sign in and the registration |
 | `.filter-card`, `.empty-state`, `.app-footer` | the rest of the pages |

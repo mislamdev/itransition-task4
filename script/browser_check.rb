@@ -88,7 +88,13 @@ begin
 
   check("the sign in opens the user table") { driver.current_url.include?("/users") }
   check("the table is rendered") { driver.find_elements(css: "#users-table tbody tr[data-user-id]").any? }
-  check("the toolbar is above the table") { driver.find_elements(css: "#selection-form .card-header button").size == 3 }
+  check("the toolbar is above the table") do
+    driver.find_element(id: "block-selected") &&
+      driver.find_element(id: "unblock-selected") &&
+      driver.find_element(id: "delete-selected")
+  end
+
+  check("the filter is in the toolbar") { driver.find_element(css: ".toolbar-filter input[name='q']") }
 
   # ----- the selection -------------------------------------------------------
   row = other_row(driver, EMAIL)
@@ -126,7 +132,7 @@ begin
     row = driver.find_elements(css: "#users-table tbody tr[data-user-id]").find do |item|
       item.find_element(css: "td:nth-child(3)").text.strip == blocked_email
     end
-    row && row.find_element(css: ".badge").text.include?("Blocked")
+    row && row.find_element(css: ".status-blocked").text.include?("Blocked")
   end
   driver.save_screenshot(File.join(OUTPUT, "08_after_block.png"))
 

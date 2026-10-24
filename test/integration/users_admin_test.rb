@@ -130,13 +130,22 @@ class UsersAdminTest < ActionDispatch::IntegrationTest
   test "the table shows the status and the timestamps" do
     get users_path
 
-    assert_select "table#users-table tbody .badge", 4
-    assert_select "table#users-table tbody tr[data-user-id=?]", @bob.id do
-      assert_select ".badge.text-bg-danger", text: /Blocked/i
-    end
+    # NOTE: the status is a text with a small dot (the reference of the task).
+    assert_select "table#users-table tbody .status", 4
+
     assert_select "table#users-table tbody tr[data-user-id=?]", @alice.id do
-      assert_select ".badge.text-bg-success", text: /Active/i
+      assert_select ".status-active", text: /Active/i
     end
+
+    # NOTE: a blocked account is dimmed and its name is struck through.
+    assert_select "table#users-table tbody tr.is-blocked[data-user-id=?]", @bob.id do
+      assert_select ".status-blocked", text: /Blocked/i
+    end
+
+    # NOTE: the timestamps are relative, the exact time is in the tooltip.
+    cells = css_select("table#users-table tbody td[title*='2026']")
+    assert cells.any?
+    assert(cells.all? { |cell| cell.text.match?(/ago|never/) })
   end
 
   test "the filter of the table works" do

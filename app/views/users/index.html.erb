@@ -68,76 +68,37 @@
   </div>
 
   <%# ----------------------------------------------------------------------- %>
-  <%# THE FILTER OF THE TABLE (a plain GET form - no javascript needed). %>
-  <%# ----------------------------------------------------------------------- %>
-  <div class="card filter-card mb-3">
-    <div class="card-body">
-      <%= form_with url: users_path, method: :get, local: true, id: "filter-form", class: "row g-2 align-items-end" do %>
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="<%= getUniqIdValue("filter-q") %>">Search</label>
-          <input type="search" class="form-control" id="<%= getUniqIdValue("filter-q") %>"
-                 name="q" value="<%= @query %>" placeholder="Name or e-mail"
-                 data-bs-toggle="tooltip" title="The table is filtered by name and e-mail.">
-        </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="<%= getUniqIdValue("filter-status") %>">Status</label>
-          <select class="form-select" id="<%= getUniqIdValue("filter-status") %>" name="status"
-                  data-bs-toggle="tooltip" title="Show only the accounts with this status.">
-            <option value="all" <%= "selected" if @status_filter == "all" %>>All</option>
-            <option value="active" <%= "selected" if @status_filter == "active" %>>Active</option>
-            <option value="blocked" <%= "selected" if @status_filter == "blocked" %>>Blocked</option>
-          </select>
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label" for="<%= getUniqIdValue("filter-sort") %>">Sort by</label>
-          <select class="form-select" id="<%= getUniqIdValue("filter-sort") %>" name="sort">
-            <% [["last_login_at", "Last login"], ["last_activity_at", "Last activity"],
-                ["name", "Name"], ["email", "E-mail"], ["position", "Position"], ["status", "Status"],
-                ["created_at", "Registered"]].each do |value, label| %>
-              <option value="<%= value %>" <%= "selected" if @sort_column == value %>><%= label %></option>
-            <% end %>
-          </select>
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label" for="<%= getUniqIdValue("filter-direction") %>">Direction</label>
-          <select class="form-select" id="<%= getUniqIdValue("filter-direction") %>" name="direction">
-            <option value="desc" <%= "selected" if @sort_direction == "desc" %>>Descending</option>
-            <option value="asc" <%= "selected" if @sort_direction == "asc" %>>Ascending</option>
-          </select>
-        </div>
-        <div class="col-6 col-md-1 d-grid">
-          <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" title="Apply the filter">
-            <i class="bi bi-funnel" aria-hidden="true"></i><span class="visually-hidden">Apply</span>
-          </button>
-        </div>
-      <% end %>
-    </div>
-  </div>
-
-  <%# ----------------------------------------------------------------------- %>
   <%# THE TABLE WITH THE TOOLBAR. %>
+  <%#                                                                   %>
   <%# IMPORTANT: the whole card (toolbar + table) is one POST form. The     %>
   <%# toolbar buttons submit this form to different endpoints with the     %>
   <%# `formaction` attribute - and there is NOT a single button inside a   %>
   <%# table row.                                                              %>
   <%# ----------------------------------------------------------------------- %>
-  <%= form_with url: block_users_path, method: :post, local: true, id: "selection-form" do %>
-    <div class="card table-card">
+  <div class="card table-card">
+    <%# NOTE: the filter form lives OUTSIDE of the selection form - two   %>
+    <%# forms must not be nested. Its fields are inside the toolbar and   %>
+    <%# belong to it with the HTML attribute `form`.                         %>
+    <%= form_with url: users_path, method: :get, local: true, id: "filter-form", class: "visually-hidden" do %>
+      <button type="submit">Apply the filter</button>
+    <% end %>
+
+    <%= form_with url: block_users_path, method: :post, local: true, id: "selection-form" do %>
       <%# NOTE: the toolbar. It is always visible - only the state of the %>
       <%# buttons changes (disabled when nothing is selected). %>
       <div class="card-header">
         <div class="toolbar">
           <div class="btn-toolbar gap-2" role="toolbar" aria-label="Actions for the selected users">
             <%# NOTE: the "Block" button - a button WITH text. %>
-            <button type="submit" class="btn btn-outline-danger btn-sm" id="block-selected"
+            <button type="submit" class="btn btn-outline-primary btn-sm" id="block-selected"
                     formaction="<%= block_users_path %>" disabled
                     data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Block the selected users">
-              <i class="bi bi-slash-circle me-1" aria-hidden="true"></i>Block
+              <i class="bi bi-lock me-1" aria-hidden="true"></i>Block
             </button>
 
             <%# NOTE: the "Unblock" button - an ICON only. %>
-            <button type="submit" class="btn btn-light btn-sm" id="unblock-selected"
+            <button type="submit" class="btn btn-outline-primary btn-sm" id="unblock-selected"
                     formaction="<%= unblock_users_path %>" disabled
                     data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Unblock the selected users" aria-label="Unblock the selected users">
@@ -153,11 +114,47 @@
             </button>
           </div>
 
-          <span class="toolbar-separator" aria-hidden="true"></span>
-
           <span class="toolbar-count" id="selection-info" aria-live="polite">
             <strong id="selection-count">0</strong> of <%= pluralize(@users.size, "row") %> selected
           </span>
+
+          <%# NOTE: the filter of the table - the fields belong to the %>
+          <%# filter form above (the attribute `form`). %>
+          <div class="toolbar-filter">
+            <div class="toolbar-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input type="search" form="filter-form" name="q" value="<%= @query %>"
+                     placeholder="Filter" aria-label="Filter the users by name or e-mail"
+                     data-bs-toggle="tooltip" title="The table is filtered by name and e-mail.">
+            </div>
+
+            <select form="filter-form" name="status" class="form-select toolbar-select"
+                    aria-label="Filter by status" data-bs-toggle="tooltip" title="Show only the accounts with this status.">
+              <option value="all" <%= "selected" if @status_filter == "all" %>>All</option>
+              <option value="active" <%= "selected" if @status_filter == "active" %>>Active</option>
+              <option value="blocked" <%= "selected" if @status_filter == "blocked" %>>Blocked</option>
+            </select>
+
+            <select form="filter-form" name="sort" class="form-select toolbar-select"
+                    aria-label="Sort by" data-bs-toggle="tooltip" title="The column the table is sorted by.">
+              <% [["last_login_at", "Last login"], ["last_activity_at", "Last activity"],
+                  ["name", "Name"], ["email", "E-mail"], ["position", "Position"], ["status", "Status"],
+                  ["created_at", "Registered"]].each do |value, label| %>
+                <option value="<%= value %>" <%= "selected" if @sort_column == value %>><%= label %></option>
+              <% end %>
+            </select>
+
+            <select form="filter-form" name="direction" class="form-select toolbar-select"
+                    aria-label="Direction" data-bs-toggle="tooltip" title="The direction of the order.">
+              <option value="desc" <%= "selected" if @sort_direction == "desc" %>>Descending</option>
+              <option value="asc" <%= "selected" if @sort_direction == "asc" %>>Ascending</option>
+            </select>
+
+            <button type="submit" form="filter-form" class="btn btn-light btn-sm"
+                    data-bs-toggle="tooltip" title="Apply the filter">
+              <i class="bi bi-funnel" aria-hidden="true"></i><span class="visually-hidden">Apply the filter</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -180,16 +177,15 @@
                 </th>
                 <th scope="col"><%= sort_link(:name, "Name") %></th>
                 <th scope="col"><%= sort_link(:email, "E-mail") %></th>
-                <th scope="col"><%= sort_link(:position, "Position") %></th>
+                <th scope="col" class="text-center"><%= sort_link(:status, "Status") %></th>
                 <th scope="col"><%= sort_link(:last_login_at, "Last login") %></th>
                 <th scope="col"><%= sort_link(:last_activity_at, "Last activity") %></th>
-                <th scope="col" class="text-center"><%= sort_link(:status, "Status") %></th>
               </tr>
             </thead>
             <tbody>
               <% if @users.empty? %>
                 <tr>
-                  <td colspan="7">
+                  <td colspan="6">
                     <div class="empty-state">
                       <i class="bi bi-inbox d-block mb-2" aria-hidden="true"></i>
                       No user matches the current filter.
@@ -199,7 +195,10 @@
               <% end %>
 
               <% @users.each do |user| %>
-                <tr data-user-id="<%= user.id %>" data-blocked="<%= user.blocked? %>">
+                <%# NOTE: a blocked account is dimmed and its name is struck %>
+                <%# through - exactly like in the reference of the task. %>
+                <tr data-user-id="<%= user.id %>" data-blocked="<%= user.blocked? %>"
+                    class="<%= 'is-blocked' if user.blocked? %>">
                   <%# IMPORTANT: the leftmost column only holds a checkbox -
                       there is no button, no link and no label in the rows. %>
                   <td class="checkbox-column">
@@ -209,12 +208,27 @@
                            data-bs-toggle="tooltip" data-bs-placement="top"
                            title="Select <%= user.email %>">
                   </td>
-                  <td class="cell-strong text-nowrap"><%= user.name %></td>
+
+                  <%# NOTE: the name and the position below it. %>
+                  <td>
+                    <span class="cell-strong"><%= user.name %></span>
+                    <span class="cell-sub"><%= user.position.presence || "—" %></span>
+                  </td>
+
                   <td class="text-nowrap"><%= user.email %></td>
-                  <td class="cell-muted text-nowrap"><%= user.position.presence || "—" %></td>
-                  <td><%= format_timestamp(user.last_login_at) %></td>
-                  <td><%= format_timestamp(user.last_activity_at) %></td>
-                  <td class="text-center"><%= status_badge(user) %></td>
+
+                  <td class="text-center"><%= status_label(user) %></td>
+
+                  <%# NOTE: the relative time, the exact timestamp is in the %>
+                  <%# tooltip of the cell. %>
+                  <td class="text-nowrap" data-bs-toggle="tooltip"
+                      title="<%= exact_time(user.last_login_at) %>">
+                    <%= relative_time(user.last_login_at) %>
+                  </td>
+                  <td class="text-nowrap" data-bs-toggle="tooltip"
+                      title="<%= exact_time(user.last_activity_at) %>">
+                    <%= relative_time(user.last_activity_at) %>
+                  </td>
                 </tr>
               <% end %>
             </tbody>
@@ -229,6 +243,6 @@
         </span>
         <span>Use the checkboxes to select the rows, then use the toolbar above the table.</span>
       </div>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 </div>
