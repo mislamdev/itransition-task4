@@ -12,6 +12,18 @@ cd "$(dirname "$0")/.."
 PORT="${PORT:-3100}"
 export RAILS_ENV=production
 export PORT
+
+# NOTE: the secret key of the production environment is NOT in the repository
+# (the repository is public - a published secret key can be used to forge the
+# cookies of the session). It is read from the file .env.production, which
+# belongs to this machine and is ignored by git.
+if [ -f .env.production ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env.production
+  set +a
+fi
+
 # NOTE: the server listens on the loopback interface only.
 export BIND="${BIND:-tcp://127.0.0.1:${PORT}}"
 # NOTE: the assistant calls the own API of the application over HTTP.

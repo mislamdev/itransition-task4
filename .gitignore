@@ -33,11 +33,8 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
-# NOTE: the master key of THIS project is committed on purpose - it is a demo
-# application of a task, the deployment has to be reproducible from the
-# repository (config/credentials.yml.enc cannot be decrypted without it, and
-# the production environment needs the secret_key_base out of it).
-# A real application would keep the key OUT of the repository and would set
-# SECRET_KEY_BASE / RAILS_MASTER_KEY in the environment.
-!/config/master.key
+# NOTE: the secret of the production environment (SECRET_KEY_BASE) lives in
+# .env.production - it is NOT in the repository, because the repository is
+# public. A published secret key can be used to forge the cookies of the
+# session. The file is ignored by the rule for the environment files above.
 
