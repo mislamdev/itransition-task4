@@ -77,13 +77,25 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # NOTE: the public host name of the tunnel changes with every start, therefore
-  # the check is limited to the loopback addresses - the tunnel is the only way
-  # into the application and it listens on 127.0.0.1.
+  # NOTE: the host authorization BLOCKS every request with a host name that is
+  # not on the list ("Blocked hosts: ...").
+  #
+  # IMPORTANT: the application is reached through a proxy with a host name that
+  # is not known in advance (the tunnel of this machine, the domain of the
+  # platform), therefore the list is built here.
   config.hosts.clear
-  config.hosts << /.*\.trycloudflare\.com/
+  config.hosts << /.*\.trycloudflare\.com/   # the tunnel of this machine
+  config.hosts << /.*\.onrender\.com/       # Render
+  config.hosts << /.*\.up\.railway\.app/     # Railway (the same reason)
+  config.hosts << /.*\.fly\.dev/            # Fly.io (the same reason)
   config.hosts << "127.0.0.1"
   config.hosts << "localhost"
+
+  # NOTE: a platform (or a custom domain) can add its own host names with the
+  # variable ALLOWED_HOSTS (a comma separated list).
+  ENV.fetch("ALLOWED_HOSTS", "").split(",").map(&:strip).reject(&:empty?).each do |host|
+    config.hosts << host
+  end
 
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }

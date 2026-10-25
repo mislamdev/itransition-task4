@@ -168,6 +168,7 @@ bundle exec ruby script/check_platform.rb       # => 7/7 green
 | the page is unstyled | the assets were not built / not served | the build command must contain `bin/rails assets:precompile`, the environment `RAILS_SERVE_STATIC_FILES=true` |
 | `Bundler::GemNotFound` / the build fails on the gems | Render used Ruby 4.0.5 (the `.ruby-version` of the repository) | set `RUBY_VERSION=3.4.2` in the environment |
 | the redirect goes to `http://` | the proxy of Render was not trusted | `ASSUME_SSL=true` |
+| `Blocked hosts: <your service>.onrender.com` | the host authorization of Rails blocked the request - the domain of the platform was not on the list | the domains of the platforms are allowed in `config/environments/production.rb` (`*.onrender.com`, `*.trycloudflare.com`, `*.up.railway.app`, `*.fly.dev`); a custom domain comes with the variable `ALLOWED_HOSTS` |
 | the first request takes a minute | the free service sleeps after 15 minutes without a request | expected on the free plan - the paid plan does not sleep |
 
 ---

@@ -81,6 +81,17 @@ check(results, "the proxy is trusted (the redirect uses https)") do
   response.code == "302" && response["location"].to_s.start_with?("https://")
 end
 
+# NOTE: the host authorization blocks every request with a host name that is
+# not on the list ("Blocked hosts: ..."). The domain of the platform is not
+# known in advance, therefore it has to be allowed explicitly.
+check(results, "the host of the platform is allowed") do
+  uri = URI.parse("#{BASE}/up")
+  request = Net::HTTP::Get.new(uri)
+  request["Host"] = ENV.fetch("PLATFORM_HOST", "itransition-task4-xckz.onrender.com")
+  response = Net::HTTP.start(uri.hostname, uri.port) { |http| http.request(request) }
+  response.code == "200"
+end
+
 failed = results.count { |(_description, ok)| !ok }
 puts
 puts " #{results.size - failed} checks passed, #{failed} failed"

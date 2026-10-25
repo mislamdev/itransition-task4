@@ -20,7 +20,7 @@ about the data and **controls the dashboard**.
 **Public URL (deployed, remotely accessible):**
 
 ```
-https://argument-magic-yields-all.trycloudflare.com
+https://surveillance-antiques-editorials-isolated.trycloudflare.com
 ```
 
 **Demo accounts** — every account uses the password `demo` (any non-empty
@@ -137,6 +137,10 @@ What the blueprint sets up:
   **`FORCE_SSL`** from the environment (the tunnel on this machine needs
   neither, Render needs `ASSUME_SSL`).
 * `config.public_file_server.enabled` follows **`RAILS_SERVE_STATIC_FILES`**.
+* the **host authorization** allows the domains of the platforms
+  (`*.onrender.com`, `*.trycloudflare.com`, `*.up.railway.app`, `*.fly.dev`) and
+  every host of the variable `ALLOWED_HOSTS` - without it Rails answers
+  "Blocked hosts: ..." and even the health check fails.
 * The `Procfile` starts Puma; the port and the interface come from the
   environment of the platform (`PORT`).
 * The assistant calls its own API over `http://127.0.0.1:$PORT` - the port of
@@ -499,7 +503,7 @@ of the assistant and the assistant page in `tmp/screenshots/`.
 ### The acceptance test of the deployed application
 
 ```bash
-bundle exec ruby script/acceptance.rb https://argument-magic-yields-all.trycloudflare.com
+bundle exec ruby script/acceptance.rb https://surveillance-antiques-editorials-isolated.trycloudflare.com
 ```
 
 The script drives the **public URL** like two browsers would and checks the
@@ -519,7 +523,7 @@ whole application (21 checks, all green):
 ### The browser check of the toolbar and of the live filter
 
 ```bash
-bundle exec ruby script/browser_check.rb https://argument-magic-yields-all.trycloudflare.com
+bundle exec ruby script/browser_check.rb https://surveillance-antiques-editorials-isolated.trycloudflare.com
 ```
 
 A real Chrome selects the rows, presses the buttons of the toolbar, asks the
