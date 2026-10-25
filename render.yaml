@@ -90,7 +90,7 @@ services:
     # login form, therefore the check uses the health endpoint of Rails.
     healthCheckPath: /up
 
-    # NOTE: the database of the service.
+    # NOTE: the database of the service - the link adds DATABASE_URL to the
+    # environment of the service.
     database:
       name: user-management-db
-      plan: free

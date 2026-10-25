@@ -93,6 +93,9 @@ bin/rails server -p 3100
 
 ### Render (one click)
 
+> The **complete instruction** (step by step, with the troubleshooting table)
+> is in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
 The repository contains a **blueprint** (`render.yaml`) - it creates the
 PostgreSQL database and the web service together:
 
@@ -571,6 +574,7 @@ script/acceptance.rb                 the acceptance test of the deployed app
 script/browser_check.rb              the browser check of the toolbar + the live filter
 script/responsive_check.rb           the four resolutions of the checklist
 script/check_platform.rb             the check of the configuration of a platform
+docs/DEPLOYMENT.md                  the instruction for the deployment on Render
 users.json                           the data set of the task (imported by the seeds)
 ```
 
